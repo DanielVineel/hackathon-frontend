@@ -31,11 +31,14 @@ const Sidebar = ({ role }) => {
     ],
   };
 
+  const roleLinks = links[role] || [];
+
   return (
     <div className="bg-light vh-100 p-3" style={{ width: "220px" }}>
       <h5 className="mb-3">Menu</h5>
+
       <ul className="nav flex-column">
-        {links[role].map((link) => (
+        {roleLinks.map((link) => (
           <li className="nav-item mb-2" key={link.path}>
             <NavLink
               to={link.path}
@@ -53,3 +56,4 @@ const Sidebar = ({ role }) => {
 };
 
 export default Sidebar;
+

@@ -1,14 +1,23 @@
-import axios from 'axios';
+// src/services/api.js
 
-const api = axios.create({
-    baseURL: 'http://localhost:5000/api', // Your backend URL
-});
+import API from "../api/api";
 
-export const studentLogin = (data) => api.post('/students/login', data);
-export const studentSignup = (data) => api.post('/students/signup', data);
-export const managerLogin = (data) => api.post('/manager/login', data);
-export const superAdminLogin = (data) => api.post('/superadmin/login', data);
-export const getEvents = () => api.get('/events');
-export const getParticipatedEvents = () => api.get('/students/participated-events');
+// Auth
+export const studentLogin = (data) => API.post("/students/login", data);
+export const studentSignup = (data) => API.post("/students/signup", data);
+export const managerLogin = (data) => API.post("/manager/login", data);
+export const superAdminLogin = (data) => API.post("/superadmin/login", data);
 
-export default api;
+// Events
+export const getEvents = () => API.get("/events");
+export const getParticipatedEvents = () => API.get("/students/participated-events");
+
+export default {
+  studentLogin,
+  studentSignup,
+  managerLogin,
+  superAdminLogin,
+  getEvents,
+  getParticipatedEvents,
+};
+

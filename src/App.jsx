@@ -29,26 +29,32 @@ import SuperAdminEvents from "./pages/superadmin/Events";
 import SuperAdminProblems from "./pages/superadmin/Problems";
 import SuperAdminAnalytics from "./pages/superadmin/Analytics";
 
-// ====== Auth Pages ======
-import Login from "./pages/auth/Login";
-import Signup from "./pages/auth/Signup";
 
 
-// ====== Protected Route Component ======
-const ProtectedRoute = ({ children, role }) => {
-  if (!isAuthenticated()) return <Navigate to="/login" />;
-  if (role && getRole() !== role) return <Navigate to="/login" />;
-  return children;
-};
+import ProtectedRoute from "./components/common/ProtectedRoute";
 
+import StudentLogin from "./pages/auth/student/Login";
+import StudentSignup from "./pages/auth/student/Signup";
+import ManagerLogin from "./pages/auth/manager/Login";
+import ManagerSignup from "./pages/auth/manager/Signup";
+import SuperAdminLogin from "./pages/auth/superadmin/Login";
+import SuperAdminSignup from "./pages/auth/superadmin/Signup";
+
+import Home from "./pages/Home";
 function App() {
   return (
     <Router>
       <Routes>
 
-        {/* ===== Auth ===== */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route path="/auth/student/login" element={<StudentLogin />} />
+        <Route path="/auth/student/signup" element={<StudentSignup />} />
+
+        <Route path="/auth/manager/login" element={<ManagerLogin />} />
+        <Route path="/auth/manager/signup" element={<ManagerSignup />} />
+
+        <Route path="/auth/superadmin/login" element={<SuperAdminLogin />} />
+        <Route path="/auth/superadmin/signup" element={<SuperAdminSignup />} />
+
 
         {/* ===== Student Routes ===== */}
         <Route path="/student/dashboard" element={
@@ -157,7 +163,7 @@ function App() {
         }/>
 
         {/* ===== Default Route ===== */}
-        <Route path="*" element={<Navigate to="/login"/>}/>
+        <Route path="*" element={<Home />}/>
       </Routes>
     </Router>
   );

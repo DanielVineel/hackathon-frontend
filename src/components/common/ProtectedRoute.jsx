@@ -1,13 +1,24 @@
-// src/components/common/ProtectedRoute.jsx
 import React from "react";
 import { Navigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { isAuthenticated, getRole } from "../../utils/auth";
 
-const ProtectedRoute = ({ children, allowedRoles }) => {
-  const { user, role } = useSelector((state) => state.auth);
+const roleDashboard = {
+  student: "/student/dashboard",
+  manager: "/manager/dashboard",
+  superadmin: "/superadmin/dashboard"
+};
 
-  if (!user) return <Navigate to="/login" />;
-  if (!allowedRoles.includes(role)) return <Navigate to="/" />;
+const ProtectedRoute = ({ children, role }) => {
+
+  if (!isAuthenticated()) {
+    return <Navigate to="/login" />;
+  }
+
+  const userRole = getRole();
+
+  if (role && role !== userRole) {
+    return <Navigate to={roleDashboard[userRole]} />;
+  }
 
   return children;
 };

@@ -1,7 +1,7 @@
 // src/utils/auth.js
 
 export const isAuthenticated = () => {
-  const token = localStorage.getItem("accessToken");
+  const token = localStorage.getItem("token");
   return !!token;
 };
 
@@ -10,11 +10,12 @@ export const getRole = () => {
 };
 
 export const login = (token, role) => {
-  localStorage.setItem("accessToken", token);
+  localStorage.setItem("token", token);
   localStorage.setItem("role", role);
 };
 
 export const logout = () => {
-  localStorage.removeItem("accessToken");
+  localStorage.removeItem("token");
   localStorage.removeItem("role");
 };
+
