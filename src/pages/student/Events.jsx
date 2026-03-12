@@ -8,7 +8,7 @@ const Events = () => {
 
   useEffect(() => {
     API.get("/events")
-      .then(res => setEvents(res.data))
+      .then(res => setEvents(Array.isArray(res.data) ? res.data : []))
       .catch(err => console.log(err));
   }, []);
 

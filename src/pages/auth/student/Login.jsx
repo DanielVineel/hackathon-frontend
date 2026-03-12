@@ -17,11 +17,18 @@ const StudentLogin = () => {
     setLoading(true);
     setError("");
     try {
-      const res = await API.post("/auth/login/student", formData);
-      const { token, role } = res.data;
-      login(token, role);
-      if (role === "student") navigate("/student/dashboard");
-      else navigate("/login"); // prevent wrong role login
+      await API.post("/auth/login/student", formData)
+      .then(res => {
+        const { accessToken,user } = res.data;
+        console.log(res.data)
+        login( accessToken,user.role);
+        
+        if (user.role === "student") navigate("/student/dashboard");
+        else navigate("/auth/student/login"); // prevent wrong role login
+      }).catch(err => console.log(err));
+
+
+      
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     } finally {

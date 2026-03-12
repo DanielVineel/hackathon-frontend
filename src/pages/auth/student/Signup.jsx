@@ -27,10 +27,10 @@ const StudentSignup = () => {
     setError("");
 
     try {
-      await API.post("/auth/signup/student", formData);
-      navigate("/auth/student/login");
+      API.post("/auth/signup/student", formData).then(res => {console.log(res.data);navigate("/auth/student/login");}).catch(err => console.log(err));
+
     } catch (err) {
-      setError(err.response?.data?.message || "Signup failed");
+      setError(err);
     } finally {
       setLoading(false);
     }

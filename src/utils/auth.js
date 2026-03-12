@@ -1,21 +1,22 @@
 // src/utils/auth.js
 
 export const isAuthenticated = () => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("bluto-hack-token");
   return !!token;
+  
 };
 
 export const getRole = () => {
-  return localStorage.getItem("role"); // 'student', 'manager', 'superadmin'
+  return localStorage.getItem("bluto-hack-role"); // 'student', 'manager', 'superadmin'
 };
 
 export const login = (token, role) => {
-  localStorage.setItem("token", token);
-  localStorage.setItem("role", role);
+  localStorage.setItem("bluto-hack-token", token);
+  localStorage.setItem("bluto-hack-role", role);
 };
 
 export const logout = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("role");
+  localStorage.removeItem("bluto-hack-token");
+  localStorage.removeItem("bluto-hack-role");
 };
 

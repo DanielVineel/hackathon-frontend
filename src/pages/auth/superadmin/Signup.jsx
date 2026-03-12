@@ -22,8 +22,9 @@ const SuperAdminSignup = () => {
     setError("");
 
     try {
-      await API.post("/auth/signup/superadmin", formData);
-      navigate("/auth/superadmin/login");
+      await API.post("/auth/signup/superadmin", formData).then(res => {navigate("/auth/superadmin/login");}).catch(err => console.log(err));
+
+      
     } catch (err) {
       setError(err.response?.data?.message || "Signup failed");
     } finally {

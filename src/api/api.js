@@ -29,17 +29,24 @@ API.interceptors.request.use(
 API.interceptors.response.use(
   (response) => response,
   (error) => {
+
+   
     if (error.response) {
       if (error.response.status === 401) {
         console.error("Unauthorized - Token expired or invalid");
+        console.error(error.response.data.message)
       }
 
       if (error.response.status === 403) {
         console.error("Forbidden - Access denied");
+        console.error(error.response.data.message)
+
       }
 
       if (error.response.status === 500) {
         console.error("Server error");
+        console.error(error.response.data.message)
+
       }
     }
 

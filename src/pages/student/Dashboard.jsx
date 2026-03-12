@@ -9,7 +9,7 @@ const Dashboard = () => {
   useEffect(() => {
     // Fetch upcoming/ongoing events
     API.get("/events")
-      .then(res => setEvents(res.data))
+      .then(res => setEvents(Array.isArray(res.data) ? res.data : []))
       .catch(err => console.log(err));
   }, []);
 
@@ -18,7 +18,7 @@ const Dashboard = () => {
       <h2>Dashboard</h2>
       <h4>Upcoming & Ongoing Events</h4>
       <div className="d-flex flex-wrap gap-3">
-        {events.map(event => (
+        { events.map(event => (
           <EventCard key={event._id} event={event} role="student" />
         ))}
       </div>

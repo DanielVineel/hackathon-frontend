@@ -17,11 +17,16 @@ const ManagerLogin = () => {
     setLoading(true);
     setError("");
     try {
-      const res = await API.post("/auth/login/manager", formData);
-      const { token, role } = res.data;
-      login(token, role);
-      if (role === "manager") navigate("/manager/dashboard");
-      else navigate("/auth/manager/login"); // prevent wrong role login
+     
+      await API.post("/auth/login/manager", formData)
+      .then(res => {
+        const { token, role } = res.data;
+        login(token, role);
+        if (role === "manager") navigate("/manager/dashboard");
+        else navigate("/auth/manager/login"); // prevent wrong role login
+      }).catch(err => console.log(err));
+      
+      
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     } finally {

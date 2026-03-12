@@ -17,11 +17,16 @@ const SuperAdminLogin = () => {
     setLoading(true);
     setError("");
     try {
-      const res = await API.post("/auth/login/superadmin", formData);
-      const { token, role } = res.data;
-      login(token, role);
-      if (role === "superadmin") navigate("/superadmin/dashboard");
-      else navigate("/auth/superadmin/login"); // prevent wrong role login
+      await API.post("/auth/login/superadmin", formData)
+      .then(res => {
+        const { token, role } = res.data;
+        login(token, role);
+        if (role === "superadmin") navigate("/superadmin/dashboard");
+        else navigate("/auth/superadmin/login"); // prevent wrong role login
+      }).catch(err => console.log(err));
+
+
+      
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     } finally {

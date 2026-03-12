@@ -23,8 +23,8 @@ const ManagerSignup = () => {
     setError("");
 
     try {
-      await API.post("/auth/signup/manager", formData); // your backend endpoint
-      navigate("/auth/manager/login");
+      await API.post("/auth/signup/manager", formData).then(res => {navigate("/auth/manager/login");}).catch(err => console.log(err));
+
     } catch (err) {
       setError(err.response?.data?.message || "Signup failed");
     } finally {
