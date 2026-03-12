@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from "react";
 import API from "../../api/api";
+import { getToken } from "../../utils/auth";
 
 const Settings = () => {
   const [user, setUser] = useState({ name: "", phone: "", dp: "", email: "" });
+  const token = getToken();
 
   useEffect(() => {
-    API.get("/student/profile")
+    API.get("/student/profile",{
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
       .then(res => setUser(res.data))
       .catch(err => console.log(err));
   }, []);

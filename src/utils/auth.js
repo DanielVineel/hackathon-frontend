@@ -5,6 +5,9 @@ export const isAuthenticated = () => {
   return !!token;
   
 };
+export const getToken=()=>{
+  return localStorage.getItem("bluto-hack-token");
+}
 
 export const getRole = () => {
   return localStorage.getItem("bluto-hack-role"); // 'student', 'manager', 'superadmin'

@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from "react";
 import API from "../../api/api";
+import { getToken } from "../../utils/auth";
 
 const PaymentHistory = () => {
   const [payments, setPayments] = useState([]);
+  const token=getToken();
 
   useEffect(() => {
-    API.get("/student/payments")
+    API.get("/student/payments",{
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
       .then(res => setPayments(res.data))
       .catch(err => console.log(err));
   }, []);

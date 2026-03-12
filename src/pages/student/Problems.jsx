@@ -2,12 +2,17 @@
 import React, { useEffect, useState } from "react";
 import API from "../../api/api";
 import ProblemCard from "../../components/common/ProblemCard";
+import { getToken } from "../../utils/auth";
 
 const Problems = () => {
   const [problems, setProblems] = useState([]);
-
+  const token = getToken();
   useEffect(() => {
-    API.get("/problems")
+    API.get("/problems", {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
       .then(res => setProblems(res.data))
       .catch(err => console.log(err));
   }, []);

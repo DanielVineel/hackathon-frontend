@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from "react";
 import API from "../../api/api";
+import { getToken } from "../../utils/auth";
 
 const EventHistory = () => {
   const [history, setHistory] = useState([]);
+  const token=getToken();
 
   useEffect(() => {
-    API.get("/student/events/history")
-      .then(res => setHistory(res.data))
+    API.get("/student/events/history", {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+      .then(res => setHistory(res.data.history))
       .catch(err => console.log(err));
   }, []);
 
