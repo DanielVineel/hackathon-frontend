@@ -7,7 +7,7 @@ const PaymentHistory = () => {
   const token=getToken();
 
   useEffect(() => {
-    API.get("/student/payments",{
+    API.get("/payments/my",{
       headers: {
         Authorization: `Bearer ${token}`
       }

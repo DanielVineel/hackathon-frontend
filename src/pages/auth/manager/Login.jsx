@@ -20,9 +20,10 @@ const ManagerLogin = () => {
      
       await API.post("/auth/login/manager", formData)
       .then(res => {
-        const { token, role } = res.data;
-        login(token, role);
-        if (role === "manager") navigate("/manager/dashboard");
+        const { accessToken, user } = res.data;
+   
+        login(accessToken, user.role);
+        if (user.role === "manager") navigate("/manager/dashboard");
         else navigate("/auth/manager/login"); // prevent wrong role login
       }).catch(err => console.log(err));
       
