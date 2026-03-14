@@ -3,9 +3,9 @@ import { Routes, Route } from "react-router-dom";
 import ManagerLayout from "../layouts/ManagerLayout";
 
 import Dashboard from "../pages/manager/Dashboard";
-import Events from "../pages/manager/Events";
+import Events from "./manager/EventsHistory";
 import CreateEvent from "../pages/manager/CreateEvent";
-import Problems from "../pages/manager/Problems";
+import Problems from "./manager/ProblemsHistory";
 import Analytics from "../pages/manager/Analytics";
 import Settings from "../pages/manager/Settings";
 

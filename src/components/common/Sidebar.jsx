@@ -1,7 +1,7 @@
 // src/components/common/Sidebar.jsx
 import React from "react";
 import { NavLink } from "react-router-dom";
-
+import { logout } from "../../store/authSlice";
 const Sidebar = ({ role }) => {
   const links = {
     student: [

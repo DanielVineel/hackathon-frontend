@@ -20,6 +20,8 @@ import SuperAdminLogin from "./pages/auth/superadmin/Login";
 import SuperAdminSignup from "./pages/auth/superadmin/Signup";
 
 import Home from "./pages/Home";
+import Events from "./pages/common/Events";
+import Problems from "./pages/common/Problems";
 
 function App() {
   return (
@@ -46,6 +48,10 @@ function App() {
         <Route path="/superadmin/*" element={<SuperAdminRoutes />} />
         
 
+
+        <Route path="/home" element={<Home />}/>
+        <Route path="/events" element={<Events />}/>
+        <Route path="/problems" element={<Problems />} />
         {/* ===== Default Route ===== */}
         <Route path="*" element={<Home />}/>
       </Routes>

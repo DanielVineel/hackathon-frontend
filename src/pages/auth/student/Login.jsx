@@ -20,7 +20,7 @@ const StudentLogin = () => {
       await API.post("/auth/login/student", formData)
       .then(res => {
         const { accessToken,user } = res.data;
-        console.log(res.data)
+
         login( accessToken,user.role);
         
         if (user.role === "student") navigate("/student/dashboard");
