@@ -2,11 +2,18 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import SuperAdminLayout from "../layouts/SuperAdminLayout";
 
-import Dashboard from "../pages/superadmin/Dashboard";
-import Managers from "../pages/superadmin/Managers";
-import Events from "../pages/superadmin/Events";
-import Problems from "../pages/superadmin/Problems";
-import Analytics from "../pages/superadmin/Analytics";
+import Dashboard from "./superadmin/Dashboard";
+import Problems from "./superadmin/Problems";
+import MyProblems from "./superadmin/MyProblems";
+import Events from "./superadmin/Events";
+import MyEvents from "./superadmin/MyEvents";
+import EventRegistrations from "./superadmin/EventRegistrations";
+import Submissions from "./superadmin/Submissions";
+import Certificates from "./superadmin/Certificates";
+import Payments from "./superadmin/Payments";
+import Users from "./superadmin/Users";
+import Settings from "./superadmin/Settings";
+
 
 import ProtectedRoute from "../components/common/ProtectedRoute";
 
@@ -25,10 +32,19 @@ const SuperAdminRoutes = () => {
         />
 
         <Route
-          path="managers"
+          path="problems"
           element={
             <ProtectedRoute role="superadmin">
-              <Managers />
+              <Problems />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="myproblems"
+          element={
+            <ProtectedRoute role="superadmin">
+              <MyProblems />
             </ProtectedRoute>
           }
         />
@@ -43,22 +59,72 @@ const SuperAdminRoutes = () => {
         />
 
         <Route
-          path="problems"
+          path="myevents"
           element={
             <ProtectedRoute role="superadmin">
-              <Problems />
+              <MyEvents />
             </ProtectedRoute>
           }
         />
 
         <Route
-          path="analytics"
+          path="events-registrations"
           element={
             <ProtectedRoute role="superadmin">
-              <Analytics />
+              <EventRegistrations />
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="submissions"
+          element={
+            <ProtectedRoute role="superadmin">
+              <Submissions />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="certificates"
+          element={
+            <ProtectedRoute role="superadmin">
+              <Certificates />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="payments"
+          element={
+            <ProtectedRoute role="superadmin">
+              <Payments />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="users"
+          element={
+            <ProtectedRoute role="superadmin">
+              <Users />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="settings"
+          element={
+            <ProtectedRoute role="superadmin">
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
+
+
+
+
+       
 
       </Route>
     </Routes>

@@ -1,0 +1,130 @@
+/* Pagination Component Styles */
+
+.pagination-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: center;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.pagination-info {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary, #666);
+  font-weight: 500;
+}
+
+.pagination {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.pagination-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border, #ddd);
+  background-color: var(--color-background-secondary, #f9f9f9);
+  color: var(--color-text, #333);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: var(--color-primary, #3b82f6);
+  color: white;
+  border-color: var(--color-primary, #3b82f6);
+  transform: translateY(-1px);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-pages {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.pagination-page {
+  min-width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 1px solid var(--color-border, #ddd);
+  background-color: var(--color-background-secondary, #f9f9f9);
+  color: var(--color-text, #333);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pagination-page:hover {
+  background-color: var(--color-primary-light, #e3f2fd);
+  border-color: var(--color-primary, #3b82f6);
+}
+
+.pagination-page.active {
+  background-color: var(--color-primary, #3b82f6);
+  color: white;
+  border-color: var(--color-primary, #3b82f6);
+}
+
+.pagination-dots {
+  color: var(--color-text-secondary, #999);
+  padding: 0 0.25rem;
+  font-weight: bold;
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+  .pagination-btn,
+  .pagination-page {
+    background-color: var(--color-background-secondary, #1e1e1e);
+    color: var(--color-text, #e0e0e0);
+    border-color: var(--color-border, #333);
+  }
+
+  .pagination-btn:hover:not(:disabled),
+  .pagination-page:hover {
+    background-color: var(--color-primary, #3b82f6);
+    color: white;
+  }
+
+  .pagination-info {
+    color: var(--color-text-secondary, #999);
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .pagination-container {
+    gap: 1rem;
+  }
+
+  .pagination-btn {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .pagination-page {
+    min-width: 2rem;
+    height: 2rem;
+    font-size: 0.8rem;
+  }
+
+  .pagination-info {
+    font-size: 0.8rem;
+  }
+}

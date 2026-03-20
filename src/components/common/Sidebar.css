@@ -1,0 +1,102 @@
+.sidebar {
+  width: 220px;
+  height: 100vh;
+  padding: 24px 12px;
+  background-color: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  overflow-y: auto;
+  transition: all var(--transition-normal);
+  position: relative;
+}
+
+.sidebar-title {
+  margin-bottom: 20px;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  padding: 0 12px;
+}
+
+.sidebar-nav {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-nav .nav-item {
+  margin: 0;
+}
+
+.sidebar-nav .nav-link {
+  display: block;
+  padding: 10px 16px;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  font-size: var(--font-size-md);
+  border-left: 3px solid transparent;
+  margin-left: -3px;
+}
+
+.sidebar-nav .nav-link:hover {
+  color: var(--color-primary);
+  background-color: var(--color-surface-variant);
+  padding-left: 24px;
+}
+
+.sidebar-nav .nav-link.active {
+  color: var(--color-primary);
+  background-color: var(--color-primary-lighter);
+  border-left-color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+  padding-left: 24px;
+}
+
+/* Scrollbar styling */
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 50px;
+    padding: 12px 4px;
+  }
+
+  .sidebar-title {
+    font-size: 0;
+    margin-bottom: 12px;
+  }
+
+  .sidebar-nav .nav-link {
+    padding: 10px 8px;
+    font-size: 0;
+    text-align: center;
+  }
+
+  .sidebar-nav .nav-link:hover,
+  .sidebar-nav .nav-link.active {
+    padding-left: 8px;
+  }
+
+  .sidebar-nav .nav-link::before {
+    content: '📄';
+  }
+}

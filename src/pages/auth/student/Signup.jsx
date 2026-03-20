@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import API from "../../../api/api";
+import API from "../../../services/api";
 
 const StudentSignup = () => {
   const navigate = useNavigate();
@@ -27,7 +27,7 @@ const StudentSignup = () => {
     setError("");
 
     try {
-      API.post("/auth/signup/student", formData).then(res => {console.log(res.data);navigate("/auth/student/login");}).catch(err => console.log(err));
+      await API.studentSignup(formData).then(res => {navigate("/auth/student/login");}).catch(err => console.log(err));
 
     } catch (err) {
       setError(err);

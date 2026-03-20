@@ -3,6 +3,8 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../store/authSlice";
 import { useNavigate } from "react-router-dom";
+import ThemeToggle from "./ThemeToggle";
+import "./Navbar.css";
 
 const Navbar = () => {
   const dispatch = useDispatch();
@@ -21,26 +23,30 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="navbar navbar-light bg-light px-3 d-flex justify-content-between">
-      
-      <span className="navbar-brand fw-bold">
-        Hackathon Platform
-      </span>
+    <nav className="navbar navbar-theme" style={{ backgroundColor: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}>
+      <div className="navbar-container px-3 d-flex justify-content-between align-items-center">
+        <span className="navbar-brand fw-bold" style={{ color: 'var(--color-primary)' }}>
+          Hackathon Platform
+        </span>
 
-      <div className="d-flex align-items-center gap-3">
+        <div className="d-flex align-items-center gap-3">
+          {user && (
+            <span className="text-secondary" style={{ color: 'var(--color-text-secondary)' }}>
+              {user.name || "User"} <span style={{ color: 'var(--color-primary)' }}>({role})</span>
+            </span>
+          )}
 
-        {user && (
-          <span className="text-muted">
-            {user.name || "User"} ({role})
-          </span>
-        )}
+          <ThemeToggle />
 
-        <button className="btn btn-outline-danger" onClick={handleLogout}>
-          Logout
-        </button>
-
+          <button 
+            className="btn btn-outline-danger" 
+            onClick={handleLogout}
+            style={{ borderColor: 'var(--color-error)', color: 'var(--color-error)' }}
+          >
+            Logout
+          </button>
+        </div>
       </div>
-
     </nav>
   );
 };

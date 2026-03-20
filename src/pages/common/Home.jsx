@@ -1,7 +1,8 @@
-import React from "react";
 import { motion } from "framer-motion";
-import { getRole } from "../utils/auth";
 import { useNavigate } from "react-router-dom";
+
+
+
 
 const stats = [
   { title: "Total Students", value: 120 },
@@ -11,7 +12,6 @@ const stats = [
 ];
 
 const Home = () => {
-  const role = getRole();
   const navigate = useNavigate();
 
   const handleDashboardRedirect = () => {

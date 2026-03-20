@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { login } from "../../../utils/auth";
-import API from "../../../api/api";
+import API from "../../../services/api";
 
 const StudentLogin = () => {
   const navigate = useNavigate();
@@ -17,7 +16,7 @@ const StudentLogin = () => {
     setLoading(true);
     setError("");
     try {
-      await API.post("/auth/login/student", formData)
+      await API.studentLogin(formData)
       .then(res => {
         const { accessToken,user } = res.data;
 

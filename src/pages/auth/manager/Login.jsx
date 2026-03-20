@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { login } from "../../../utils/auth";
-import API from "../../../api/api";
+import API from "../../../services/api";
 
 const ManagerLogin = () => {
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ const ManagerLogin = () => {
     setError("");
     try {
      
-      await API.post("/auth/login/manager", formData)
+      await API.managerLogin(formData)
       .then(res => {
         const { accessToken, user } = res.data;
    

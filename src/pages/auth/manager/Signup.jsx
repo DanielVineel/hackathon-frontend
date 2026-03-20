@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import API from "../../../api/api";
+import API from "../../../services/api";
 
 const ManagerSignup = () => {
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ const ManagerSignup = () => {
     setError("");
 
     try {
-      await API.post("/auth/signup/manager", formData).then(res => {navigate("/auth/manager/login");}).catch(err => console.log(err));
+      await API.managerSignup(formData).then(res => {navigate("/auth/manager/login");}).catch(err => console.log(err));
 
     } catch (err) {
       setError(err.response?.data?.message || "Signup failed");

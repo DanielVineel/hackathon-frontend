@@ -1,0 +1,273 @@
+/* Manager Submissions, Registrations, Leaderboard, Certificates */
+
+/* Shared table styles */
+.submissions-table,
+.registrations-table,
+.leaderboard-table,
+.certificates-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.submissions-table thead,
+.registrations-table thead,
+.leaderboard-table thead,
+.certificates-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.submissions-table th,
+.registrations-table th,
+.leaderboard-table th,
+.certificates-table th {
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+  border: none;
+}
+
+.submissions-table td,
+.registrations-table td,
+.leaderboard-table td,
+.certificates-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.submissions-table tbody tr:hover,
+.registrations-table tbody tr:hover,
+.leaderboard-table tbody tr:hover,
+.certificates-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.submissions-table tbody tr.current-user,
+.leaderboard-table tbody tr.current-user {
+  background: #f0f0ff;
+  font-weight: 600;
+}
+
+.badge {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
+.badge-accepted {
+  background: #d4edda;
+  color: #155724;
+}
+
+.badge-rejected {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.badge-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+/* Manager Submissions Specific */
+.manager-submissions {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.manager-submissions h1 {
+  margin-bottom: 25px;
+  color: #333;
+}
+
+.filters {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.filters select {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filters select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+/* Submission Detail Modal */
+.submission-info {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+}
+
+.submission-info p {
+  margin: 8px 0;
+}
+
+.code-section {
+  background: #2d2d2d;
+  color: #f8f8f2;
+  padding: 15px;
+  border-radius: 6px;
+  margin: 15px 0;
+  overflow-x: auto;
+}
+
+.code-section pre {
+  margin: 0;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
+.modal-content {
+  padding: 20px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #333;
+  font-weight: 600;
+}
+
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-family: inherit;
+}
+
+.btn-view,
+.btn-accept,
+.btn-reject,
+.btn-download,
+.btn-resend {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 5px;
+}
+
+.btn-view {
+  background: #17a2b8;
+  color: white;
+}
+
+.btn-accept {
+  background: #28a745;
+  color: white;
+}
+
+.btn-reject {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-download {
+  background: #667eea;
+  color: white;
+}
+
+.btn-resend {
+  background: #17a2b8;
+  color: white;
+}
+
+/* Manager Leaderboard */
+.manager-leaderboard,
+.manager-registrations,
+.manager-certificates {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.leaderboard-controls,
+.controls {
+  margin-bottom: 25px;
+}
+
+.leaderboard-controls select,
+.controls select {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.rank {
+  font-weight: 600;
+  width: 80px;
+}
+
+.score {
+  font-weight: 600;
+  color: #667eea;
+}
+
+/* Empty State */
+.empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400px;
+  color: #999;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .submissions-table,
+  .registrations-table,
+  .leaderboard-table,
+  .certificates-table {
+    font-size: 0.9em;
+  }
+
+  .submissions-table th,
+  .registrations-table th,
+  .leaderboard-table th,
+  .certificates-table th,
+  .submissions-table td,
+  .registrations-table td,
+  .leaderboard-table td,
+  .certificates-table td {
+    padding: 10px;
+  }
+
+  .filters {
+    flex-direction: column;
+  }
+
+  .filters select {
+    width: 100%;
+  }
+}

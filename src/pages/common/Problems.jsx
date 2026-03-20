@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import API from "../../api/api";
+import API from "../../services/api";
 import { getToken } from "../../utils/auth";
 
 const Problems = () => {
@@ -8,17 +8,9 @@ const Problems = () => {
   const token = getToken();
 
   const fetchProblems = async (diff) => {
+    const data={"level":difficulty}
     try {
-      let url = "/problems";
-      if (diff !== "all") {
-        url += `?difficulty=${diff}`;
-      }
-
-      const res = await API.get(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+     const res= await API.getProblems(data)
 
       setProblems(res.data);
     } catch (err) {

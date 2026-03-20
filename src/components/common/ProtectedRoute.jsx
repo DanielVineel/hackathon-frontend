@@ -9,12 +9,17 @@ const roleDashboard = {
 };
 
 const ProtectedRoute = ({ children, role }) => {
-
+  // Redirect to /home if not authenticated
   if (!isAuthenticated()) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/home" />;
   }
 
   const userRole = getRole();
+
+  // Only redirect if role is not found or doesn't match
+  if (!userRole) {
+    return <Navigate to="/home" />;
+  }
 
   if (role && role !== userRole) {
     return <Navigate to={roleDashboard[userRole]} />;

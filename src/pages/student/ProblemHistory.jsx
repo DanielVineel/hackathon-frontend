@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import API from "../../api/api";
 import { getToken } from "../../utils/auth";
+import "../styles/StudentProblemHistory.css";
 
 const ProblemHistory = () => {
   const [history, setHistory] = useState([]);

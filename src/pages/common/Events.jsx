@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import API from "../../api/api";
+import API from "../../services/api";
 import { getToken } from "../../utils/auth";
 
 const Events = () => {
@@ -8,17 +8,9 @@ const Events = () => {
   const token = getToken();
 
   const fetchEvents = async (selectedStatus) => {
+    const data={"status":status}
     try {
-      let url = "/events";
-      if (selectedStatus !== "all") {
-        url += `?status=${selectedStatus}`;
-      }
-
-      const res = await API.get(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res=await API.getEvents(data)
 
       setEvents(res.data);
     } catch (err) {

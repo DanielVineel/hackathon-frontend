@@ -1,7 +1,7 @@
 // src/App.jsx
-import React from "react";
+
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { getRole, isAuthenticated } from "./utils/auth";
+
 
 // ====== Student Pages ======
 import StudentRoutes from "./pages/StudentMain";
@@ -19,7 +19,7 @@ import ManagerSignup from "./pages/auth/manager/Signup";
 import SuperAdminLogin from "./pages/auth/superadmin/Login";
 import SuperAdminSignup from "./pages/auth/superadmin/Signup";
 
-import Home from "./pages/Home";
+import Home from "./pages/common/Home";
 import Events from "./pages/common/Events";
 import Problems from "./pages/common/Problems";
 

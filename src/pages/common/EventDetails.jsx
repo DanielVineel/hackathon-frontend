@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import API from "../../api/api";
+import API from "../../services/api";
 import { getToken } from "../../utils/auth";
 
 const EventDetails = () => {
@@ -11,11 +11,7 @@ const EventDetails = () => {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const res = await API.get(`/events/${eventId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await API.getEventDetails(eventId);
         setEvent(res.data);
       } catch (err) {
         console.log(err);

@@ -4,10 +4,12 @@ import ManagerLayout from "../layouts/ManagerLayout";
 
 import Dashboard from "../pages/manager/Dashboard";
 import Events from "./manager/EventsHistory";
-import CreateEvent from "../pages/manager/CreateEvent";
+import CreateEvent from "./manager/CreateEvent";
 import Problems from "./manager/ProblemsHistory";
-import Analytics from "../pages/manager/Analytics";
-import Settings from "../pages/manager/Settings";
+import Analytics from "./manager/Analytics";
+import Submissions from "./manager/Submissions";
+import Certificates from "./manager/Certificates";
+import Settings from "./manager/Settings";
 
 import ProtectedRoute from "../components/common/ProtectedRoute";
 
@@ -57,6 +59,24 @@ const ManagerRoutes = () => {
           element={
             <ProtectedRoute role="manager">
               <Analytics />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="submissions"
+          element={
+            <ProtectedRoute role="manager">
+              <Submissions />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="certificates"
+          element={
+            <ProtectedRoute role="manager">
+              <Certificates />
             </ProtectedRoute>
           }
         />

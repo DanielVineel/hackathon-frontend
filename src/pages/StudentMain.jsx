@@ -5,16 +5,15 @@ import StudentLayout from "../layouts/StudentLayout";
 import ProtectedRoute from "../components/common/ProtectedRoute";
 
 // ===== Student Pages =====
-import StudentDashboard from "../pages/student/Dashboard";
-import Events from "../pages/student/Events";
-import EventDetails from "../pages/student/EventDetails";
-import Problems from "../pages/student/Problems";
-import Certificates from "../pages/student/Certificates";
-import EventHistory from "../pages/student/EventHistory";
-import ProblemHistory from "../pages/student/ProblemHistory";
-import PaymentHistory from "../pages/student/PaymentHistory";
-import StudentSettings from "../pages/student/Settings";
-
+import StudentDashboard from "./student/Dashboard";
+import Events from "./common/Events";
+import EventDetails from "./common/EventDetails";
+import Problems from "./common/Problems";
+import Certificates from "./student/Certificates";
+import EventHistory from "./student/EventHistory";
+import ProblemHistory from "./student/ProblemHistory";
+import PaymentHistory from "./student/PaymentHistory";
+import StudentSettings from "./student/Settings";
 const StudentRoutes = () => {
   return (
     <Routes>
