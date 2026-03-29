@@ -42,6 +42,7 @@
   flex-direction: column;
   gap: 0.5rem;
   box-shadow: var(--shadow-sm);
+  width:250px;
 }
 
 .stat-label {
@@ -195,6 +196,17 @@
 .status-pending {
   background-color: var(--color-warning-lighter);
   color: var(--color-warning);
+}
+
+/* Enhanced Users Page Styles */
+.Users .role-student {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #1e40af;
+}
+
+.Users .role-manager {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #d97706;
 }
 
 .action-btn {

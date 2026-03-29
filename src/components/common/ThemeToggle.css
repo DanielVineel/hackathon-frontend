@@ -1,20 +1,22 @@
 .theme-toggle {
-  background: none;
-  border: none;
+  background: transparent;
+  border: 1px solid var(--border);
   cursor: pointer;
-  color: var(--color-text-primary);
-  padding: 8px;
+  color: var(--text-primary);
+  padding: 8px 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-full);
-  transition: all var(--transition-fast);
-  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .theme-toggle:hover {
-  background-color: var(--color-surface);
-  border-color: var(--color-primary);
+  background-color: var(--bg-hover);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .theme-toggle:active {

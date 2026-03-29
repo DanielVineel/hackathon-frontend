@@ -1,99 +1,144 @@
 import React, { useEffect, useState } from "react";
-// import {
-//   getProfile,
-//   updateProfile,
-//   updatePassword,
-//   getPlatformSettings,
-//   updatePlatformSettings,
-//  } from "../../services/api";
+import API from "../../api/api";
+import { useTheme } from "../../context/ThemeContext";
+import "../../styles/theme.css";
 
 const Settings = () => {
+  const { theme } = useTheme();
   const [profile, setProfile] = useState({
     name: "",
     email: "",
+    phone: "",
   });
 
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
     newPassword: "",
+    confirmPassword: "",
   });
 
-  const [platform, setPlatform] = useState({
-    platformName: "",
-    supportEmail: "",
-    defaultFee: "",
+  const [securityData, setSecurityData] = useState({
+    twoFactorEnabled: false,
+    loginNotifications: true,
+    sessionTimeout: 30,
   });
 
+  const [activeTab, setActiveTab] = useState("profile");
   const [loading, setLoading] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
-  // Fetch data
+  // Fetch profile data
   useEffect(() => {
     fetchProfile();
-    fetchPlatformSettings();
+    fetchSecuritySettings();
   }, []);
 
   const fetchProfile = async () => {
     try {
-      const res = await getProfile();
-      setProfile(res.data);
+      setLoading(true);
+      const res = await API.get("/auth/profile");
+      setProfile(res.data?.data || res.data);
+      setError(null);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching profile:", err);
+      setError("Failed to load profile");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const fetchPlatformSettings = async () => {
+  const fetchSecuritySettings = async () => {
     try {
-      const res = await getPlatformSettings();
-      setPlatform(res.data);
+      const res = await API.get("/auth/security-settings");
+      setSecurityData(res.data?.data || {});
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching security settings:", err);
     }
   };
 
-  // Handle change
+  // Handle input changes
   const handleProfileChange = (e) => {
-    setProfile({ ...profile, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setProfile({ ...profile, [name]: value });
+    setError(null);
   };
 
   const handlePasswordChange = (e) => {
-    setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setPasswordData({ ...passwordData, [name]: value });
+    setError(null);
   };
 
-  const handlePlatformChange = (e) => {
-    setPlatform({ ...platform, [e.target.name]: e.target.value });
+  const handleSecurityChange = (e) => {
+    const { name, type, checked, value } = e.target;
+    setSecurityData({
+      ...securityData,
+      [name]: type === "checkbox" ? checked : value,
+    });
   };
 
   // Save profile
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
+    setSaveLoading(true);
     try {
-      await updateProfile(profile);
-      alert("Profile updated");
+      const res = await API.put("/auth/profile", profile);
+      setSuccess("Profile updated successfully!");
+      setTimeout(() => setSuccess(null), 3000);
+      setError(null);
     } catch (err) {
-      console.error(err);
+      setError(err.response?.data?.message || "Failed to update profile");
+    } finally {
+      setSaveLoading(false);
     }
   };
 
   // Change password
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
+    
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (passwordData.newPassword.length < 8) {
+      setError("Password must be at least 8 characters long");
+      return;
+    }
+
+    setSaveLoading(true);
     try {
-      await updatePassword(passwordData);
-      setPasswordData({ oldPassword: "", newPassword: "" });
-      alert("Password updated");
+      await API.post("/auth/change-password", {
+        oldPassword: passwordData.oldPassword,
+        newPassword: passwordData.newPassword,
+      });
+      setSuccess("Password changed successfully!");
+      setPasswordData({ oldPassword: "", newPassword: "", confirmPassword: "" });
+      setError(null);
+      setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error(err);
+      setError(err.response?.data?.message || "Failed to change password");
+    } finally {
+      setSaveLoading(false);
     }
   };
 
-  // Save platform settings
-  const handlePlatformSubmit = async (e) => {
+  // Save security settings
+  const handleSecuritySubmit = async (e) => {
     e.preventDefault();
+    setSaveLoading(true);
     try {
-      await updatePlatformSettings(platform);
-      alert("Platform settings updated");
+      await API.put("/auth/security-settings", securityData);
+      setSuccess("Security settings updated successfully!");
+      setError(null);
+      setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error(err);
+      setError(err.response?.data?.message || "Failed to update security settings");
+    } finally {
+      setSaveLoading(false);
     }
   };
 

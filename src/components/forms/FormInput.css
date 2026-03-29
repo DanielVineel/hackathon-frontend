@@ -1,0 +1,39 @@
+/* FormInput Styles */
+
+.form-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.form-input-icon {
+  position: absolute;
+  left: 12px;
+  font-size: 18px;
+  pointer-events: none;
+  color: var(--text-muted);
+}
+
+.form-input {
+  padding-left: 40px;
+}
+
+.form-input.has-icon {
+  padding-left: 40px;
+}
+
+.form-input.error {
+  border-color: var(--danger);
+  background: rgba(255, 23, 68, 0.05);
+}
+
+.required {
+  color: var(--danger);
+  margin-left: 4px;
+}
+
+@media (max-width: 639px) {
+  .form-input-icon {
+    font-size: 16px;
+  }
+}

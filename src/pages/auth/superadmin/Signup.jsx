@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { saveAuth, USER_TYPES } from "../../../utils/auth";
 import API from "../../../api/api";
 import "../styles/Auth.css";
 
@@ -9,25 +10,119 @@ const SuperAdminSignup = () => {
     name: "",
     email: "",
     phone: "",
-    password: ""
+    password: "",
+    confirmPassword: "",
+    securityKey: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (error) setError("");
+  };
+
+  const validateForm = () => {
+    if (!formData.name?.trim()) {
+      setError("Full name is required");
+      return false;
+    }
+    if (!formData.email?.trim()) {
+      setError("Email is required");
+      return false;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      setError("Please enter a valid email address");
+      return false;
+    }
+    if (!formData.phone?.trim()) {
+      setError("Phone number is required");
+      return false;
+    }
+    if (!/^\d{10}$/.test(formData.phone.replace(/\D/g, ""))) {
+      setError("Please enter a valid phone number");
+      return false;
+    }
+    if (!formData.securityKey?.trim()) {
+      setError("Security key is required");
+      return false;
+    }
+    if (formData.securityKey.length < 10) {
+      setError("Security key must be at least 10 characters");
+      return false;
+    }
+    if (!formData.password) {
+      setError("Password is required");
+      return false;
+    }
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return false;
+    }
+    if (!/[A-Z]/.test(formData.password)) {
+      setError("Password must contain at least one uppercase letter");
+      return false;
+    }
+    if (!/[0-9]/.test(formData.password)) {
+      setError("Password must contain at least one number");
+      return false;
+    }
+    if (!/[!@#$%^&*]/.test(formData.password)) {
+      setError("Password must contain at least one special character (!@#$%^&*)");
+      return false;
+    }
+    if (!formData.confirmPassword) {
+      setError("Please confirm your password");
+      return false;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return false;
+    }
+    return true;
+  };
 
   const handleSignup = async (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) return;
+
     setLoading(true);
     setError("");
 
     try {
-      const res = await API.post("/superadmin/signup", formData);
+      const signupData = { ...formData };
+      delete signupData.confirmPassword;
+
+      const res = await API.post("/auth/signup/superadmin", signupData);
+      
       if (res.data?.success) {
-        navigate("/auth/superadmin/login");
+        const { accessToken, refreshToken, user } = res.data;
+
+        // Verify user role
+        if (user.role !== USER_TYPES.SUPERADMIN) {
+          setError("Account creation failed: Invalid role assigned");
+          return;
+        }
+
+        // Auto-login after signup
+        saveAuth(USER_TYPES.SUPERADMIN, {
+          token: accessToken,
+          refreshToken: refreshToken || "",
+          user
+        });
+
+        navigate("/superadmin/dashboard");
+      } else {
+        setError(res.data?.message || "Signup failed");
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Signup failed");
+      const errorMessage = err.response?.data?.message || err.message || "Signup failed";
+      setError(errorMessage);
+      console.error("Signup error:", err);
     } finally {
       setLoading(false);
     }
@@ -35,72 +130,178 @@ const SuperAdminSignup = () => {
 
   return (
     <div className="auth-container">
-      <div className="auth-card">
-        <h2>SuperAdmin Registration</h2>
-        <p className="subtitle">Create administrator account (Internal Only)</p>
-        
-        {error && <div className="error-message">{error}</div>}
-        
-        <form className="auth-form" onSubmit={handleSignup}>
-          <div className="form-group">
-            <label htmlFor="name">Full Name</label>
-            <input
-              id="name"
-              type="text"
-              name="name"
-              placeholder="Enter your full name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-            />
+      <div className="auth-card auth-card-wide">
+        {/* Header */}
+        <div className="auth-header">
+          <div className="role-badge superadmin-badge">👑 Super Admin</div>
+          <h2>Administrator Registration</h2>
+          <p className="subtitle">Create administrator account (Internal Only)</p>
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="error-message">
+            <span>⚠️ {error}</span>
+          </div>
+        )}
+
+        {/* Signup Form */}
+        <form onSubmit={handleSignup} className="auth-form">
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="name">Full Name</label>
+              <div className="input-wrapper">
+                <span className="input-icon">👤</span>
+                <input
+                  id="name"
+                  name="name"
+                  placeholder="John Doe"
+                  value={formData.name}
+                  onChange={handleChange}
+                  disabled={loading}
+                  className="form-input"
+                />
+              </div>
+            </div>
+            <div className="form-group">
+              <label htmlFor="securityKey">Security Key</label>
+              <div className="input-wrapper">
+                <span className="input-icon">🔑</span>
+                <input
+                  id="securityKey"
+                  name="securityKey"
+                  type="password"
+                  placeholder="Administrator security key"
+                  value={formData.securityKey}
+                  onChange={handleChange}
+                  disabled={loading}
+                  className="form-input"
+                />
+              </div>
+              <small className="helper-text">Required for administrator verification</small>
+            </div>
           </div>
 
           <div className="form-group">
             <label htmlFor="email">Email Address</label>
-            <input
-              id="email"
-              type="email"
-              name="email"
-              placeholder="Enter your email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
+            <div className="input-wrapper">
+              <span className="input-icon">✉️</span>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="admin@example.com"
+                value={formData.email}
+                onChange={handleChange}
+                disabled={loading}
+                className="form-input"
+              />
+            </div>
           </div>
 
           <div className="form-group">
             <label htmlFor="phone">Phone Number</label>
-            <input
-              id="phone"
-              type="tel"
-              name="phone"
-              placeholder="Enter your phone number"
-              value={formData.phone}
-              onChange={handleChange}
-              required
-            />
+            <div className="input-wrapper">
+              <span className="input-icon">📱</span>
+              <input
+                id="phone"
+                name="phone"
+                placeholder="+91 9876543210"
+                value={formData.phone}
+                onChange={handleChange}
+                disabled={loading}
+                className="form-input"
+              />
+            </div>
           </div>
 
           <div className="form-group">
             <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              name="password"
-              placeholder="Create a strong password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
+            <div className="input-wrapper">
+              <span className="input-icon">🔒</span>
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Create a strong password"
+                value={formData.password}
+                onChange={handleChange}
+                disabled={loading}
+                className="form-input"
+              />
+              <button
+                type="button"
+                className="toggle-password"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex="-1"
+              >
+                {showPassword ? "👁️" : "👁️‍🗨️"}
+              </button>
+            </div>
+            <div className="password-requirements">
+              <small>
+                ✓ At least 8 characters
+                <br />
+                ✓ One uppercase letter
+                <br />
+                ✓ One number
+                <br />
+                ✓ One special character (!@#$%^&*)
+              </small>
+            </div>
           </div>
 
-          <button type="submit" className="submit-btn" disabled={loading}>
-            {loading ? "Creating account..." : "Create Account"}
+          <div className="form-group">
+            <label htmlFor="confirmPassword">Confirm Password</label>
+            <div className="input-wrapper">
+              <span className="input-icon">🔒</span>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Re-enter your password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                disabled={loading}
+                className="form-input"
+              />
+              <button
+                type="button"
+                className="toggle-password"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                tabIndex="-1"
+              >
+                {showConfirmPassword ? "👁️" : "👁️‍🗨️"}
+              </button>
+            </div>
+          </div>
+
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="submit-btn"
+          >
+            {loading ? (
+              <>
+                <span className="spinner"></span> Creating Account...
+              </>
+            ) : (
+              "Create Administrator Account"
+            )}
           </button>
         </form>
 
+        {/* Footer */}
         <div className="auth-footer">
-          <p>Already have an account? <a href="/auth/superadmin/login">Login here</a></p>
+          <p>
+            Already have an account?{" "}
+            <Link to="/auth/superadmin/login">
+              Login here
+            </Link>
+          </p>
+          <p className="warning-text">
+            ⚠️ This action is being monitored for security purposes
+          </p>
         </div>
       </div>
     </div>

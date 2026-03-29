@@ -1,280 +1,261 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Pagination from "../../components/common/Pagination";
-import FilterPanel from "../../components/common/FilterPanel";
-import { getBlutoStorage, setBlutoStorage } from "../../utils/storage";
-import { applyFilters } from "../../utils/filters";
-import { paginateArray } from "../../utils/pagination";
-import API from "../../api/api";
-import "../styles/StudentSubmissions.css";
+import DataTable from "../../components/common/DataTable";
+import { useApi } from "../../hooks/useApi";
+import { useFilter } from "../../hooks/useFilter";
+import { usePagination } from "../../hooks/usePagination";
+import "../../styles/EnhancedPages.css";
 
 const StudentSubmissions = () => {
   const navigate = useNavigate();
-  const [submissions, setSubmissions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selectedSubmission, setSelectedSubmission] = useState(null);
-  const [showDetail, setShowDetail] = useState(false);
-
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 10;
-
-  // Filters with bluto namespace
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [activeFilters, setActiveFilters] = useState(
-    getBlutoStorage("student-submissions-filters", {})
-  );
-  const [searchTerm, setSearchTerm] = useState(
-    getBlutoStorage("student-submissions-search", "")
-  );
-  const [sortBy, setSortBy] = useState(
-    getBlutoStorage("student-submissions-sort", "createdAt")
-  );
-  const [sortOrder, setSortOrder] = useState(
-    getBlutoStorage("student-submissions-sort-order", "desc")
-  );
-
-  useEffect(() => {
-    fetchSubmissions();
-  }, []);
-
-  const fetchSubmissions = async () => {
-    try {
-      setLoading(true);
-      const res = await API.get("/student/my-submissions");
-      setSubmissions(res.data?.data || []);
-      setError(null);
-    } catch (err) {
-      console.error("Error:", err);
-      setError("Failed to load submissions");
-      setSubmissions([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredSubmissions = applyFilters(submissions, {
-    searchTerm,
-    searchFields: ["problemId", "code"],
-    filters: activeFilters,
-    sortBy,
-    sortOrder,
+  const { data: submissions, loading, error, refetch } = useApi("/submissions");
+  const { filters, updateFilter, resetFilters } = useFilter({
+    status: "",
+    problemId: "",
+    dateRange: ""
   });
+  const { currentPage, pageSize, totalPages, paginatedData, goToPage } = usePagination(submissions || [], 10);
 
-  const paginatedData = paginateArray(
-    filteredSubmissions,
-    currentPage,
-    ITEMS_PER_PAGE
-  );
+  const [showFilters, setShowFilters] = useState(false);
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState("desc");
 
-  const handleFilterChange = (filters) => {
-    setBlutoStorage("student-submissions-filters", filters);
-    setActiveFilters(filters);
-    setCurrentPage(1);
-  };
+  // Apply filters and sorting
+  const filteredSubmissions = React.useMemo(() => {
+    let filtered = [...(submissions || [])];
 
-  const handleClearFilters = () => {
-    setBlutoStorage("student-submissions-filters", {});
-    setBlutoStorage("student-submissions-search", "");
-    setActiveFilters({});
-    setSearchTerm("");
-    setCurrentPage(1);
-  };
+    if (filters.status) {
+      filtered = filtered.filter(s => s.status === filters.status);
+    }
+    if (filters.problemId) {
+      filtered = filtered.filter(s => s.problemId === filters.problemId);
+    }
 
-  const handleSearchChange = (e) => {
-    const term = e.target.value;
-    setSearchTerm(term);
-    setBlutoStorage("student-submissions-search", term);
-    setCurrentPage(1);
-  };
+    // Sort
+    filtered.sort((a, b) => {
+      let aVal = a[sortBy];
+      let bVal = b[sortBy];
+      if (typeof aVal === "string") aVal = aVal.toLowerCase();
+      if (typeof bVal === "string") bVal = bVal.toLowerCase();
+      
+      if (sortOrder === "asc") return aVal > bVal ? 1 : -1;
+      return aVal < bVal ? 1 : -1;
+    });
 
-  const handleSortChange = (field, order) => {
-    setSortBy(field);
-    setSortOrder(order);
-    setBlutoStorage("student-submissions-sort", field);
-    setBlutoStorage("student-submissions-sort-order", order);
-    setCurrentPage(1);
-  };
+    return filtered;
+  }, [submissions, filters, sortBy, sortOrder]);
 
-  const filterConfig = [
-    {
-      key: "status",
-      type: "multiselect",
-      label: "Submission Status",
-      options: [
-        { value: "accepted", label: "Accepted" },
-        { value: "rejected", label: "Rejected" },
-        { value: "pending", label: "Pending" },
-      ],
-    },
+  const columns = [
+    { key: "submissionId", label: "Submission ID", width: "12%" },
+    { key: "problemTitle", label: "Problem", width: "20%" },
+    { key: "language", label: "Language", width: "12%" },
+    { key: "status", label: "Status", width: "12%", render: (val) => (
+      <span className={`status-badge status-${val?.toLowerCase()}`}>{val}</span>
+    )},
+    { key: "score", label: "Score", width: "8%", render: (val) => `${val || 0}%` },
+    { key: "submittedAt", label: "Submitted", width: "15%", render: (val) => new Date(val).toLocaleDateString() },
+    { key: "actions", label: "Actions", width: "21%", render: (_, row) => (
+      <div className="action-buttons">
+        <button 
+          className="btn btn-primary btn-sm"
+          onClick={() => navigate(`/student/submissions/${row.submissionId}`)}
+        >
+          View
+        </button>
+        {row.status === "Pending" && (
+          <button 
+            className="btn btn-warning btn-sm"
+            onClick={() => navigate(`/student/submissions/${row.submissionId}/edit`)}
+          >
+            Resubmit
+          </button>
+        )}
+        <button 
+          className="btn btn-secondary btn-sm"
+          onClick={() => handleDownloadCode(row)}
+        >
+          Download
+        </button>
+      </div>
+    )},
   ];
 
-  if (loading) {
-    return (
-      <div className="student-submissions">
-        <div className="loading">Loading submissions...</div>
-      </div>
-    );
-  }
+  const handleDownloadCode = (submission) => {
+    // Implement download logic
+    console.log("Downloading code for submission:", submission.submissionId);
+  };
+
+  const getStatusStats = () => {
+    const stats = {};
+    submissions?.forEach(s => {
+      stats[s.status] = (stats[s.status] || 0) + 1;
+    });
+    return stats;
+  };
+
+  const stats = React.useMemo(() => getStatusStats(), [submissions]);
 
   return (
-    <div className="student-submissions">
-      <div className="header">
-        <h1>My Submissions</h1>
-        <p>View all your code submissions and results</p>
+    <div className="enhanced-page">
+      {/* Header */}
+      <div className="page-header">
+        <div className="header-content">
+          <h1>📤 My Submissions</h1>
+          <p>Track and manage your problem submissions</p>
+        </div>
+        <button className="btn btn-primary" onClick={() => navigate("/student/problems")}>
+          Submit New Solution
+        </button>
       </div>
 
-      {error && <div className="error-message">{error}</div>}
-
-      <div className="submissions-controls">
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder="Search submissions..."
-            value={searchTerm}
-            onChange={handleSearchChange}
-            className="search-input"
-          />
+      {/* Stats Bar */}
+      <div className="stats-bar">
+        <div className="stat-card">
+          <div className="stat-value">{submissions?.length || 0}</div>
+          <div className="stat-label">Total Submissions</div>
         </div>
-
-        <FilterPanel
-          filters={filterConfig}
-          onFilterChange={handleFilterChange}
-          onClearFilters={handleClearFilters}
-          isOpen={filterOpen}
-          onToggle={() => setFilterOpen(!filterOpen)}
-        />
-
-        <div className="sort-controls">
-          <select
-            value={sortBy}
-            onChange={(e) => handleSortChange(e.target.value, sortOrder)}
-            className="sort-select"
-          >
-            <option value="createdAt">Sort by Date</option>
-            <option value="score">Sort by Score</option>
-          </select>
-          <button
-            className={`sort-order-btn ${sortOrder}`}
-            onClick={() =>
-              handleSortChange(sortBy, sortOrder === "asc" ? "desc" : "asc")
-            }
-          >
-            {sortOrder === "asc" ? "↑" : "↓"}
-          </button>
+        <div className="stat-card">
+          <div className="stat-value">{stats["Accepted"] || 0}</div>
+          <div className="stat-label">Accepted</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-value">{stats["Wrong Answer"] || 0}</div>
+          <div className="stat-label">Wrong Answer</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-value">{stats["Runtime Error"] || 0}</div>
+          <div className="stat-label">Runtime Error</div>
         </div>
       </div>
 
-      {paginatedData.data.length > 0 ? (
-        <>
-          <table className="submissions-table">
-            <thead>
-              <tr>
-                <th>Problem</th>
-                <th>Status</th>
-                <th>Score</th>
-                <th>Date</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedData.data.map((sub) => (
-                <tr key={sub._id}>
-                  <td className="problem-cell">{sub.problemId?.name}</td>
-                  <td>
-                    <span className={`badge badge-${sub.status}`}>
-                      {sub.status}
-                    </span>
-                  </td>
-                  <td className="score-cell">{sub.score || 0}</td>
-                  <td className="date-cell">
-                    {new Date(sub.createdAt).toLocaleDateString()}
-                  </td>
-                  <td>
-                    <button
-                      className="btn-view"
-                      onClick={() => {
-                        setSelectedSubmission(sub);
-                        setShowDetail(true);
-                      }}
-                    >
-                      View
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <Pagination
-            currentPage={currentPage}
-            totalPages={paginatedData.pages}
-            onPageChange={setCurrentPage}
-            itemsPerPage={ITEMS_PER_PAGE}
-            totalItems={filteredSubmissions.length}
-          />
-        </>
-      ) : (
-        <div className="empty">
-          <p>No submissions yet. Start solving problems!</p>
-          {Object.keys(activeFilters).length > 0 && (
-            <button className="reset-btn" onClick={handleClearFilters}>
-              Clear Filters
-            </button>
-          )}
-          <button className="btn-primary" onClick={() => navigate("/student/events")}>
-            Browse Events
-          </button>
-        </div>
-      )}
-
-      {/* Detail Modal */}
-      {showDetail && selectedSubmission && (
-        <div
-          className="modal-overlay"
-          onClick={() => setShowDetail(false)}
-          role="dialog"
-          aria-modal="true"
+      {/* Filters */}
+      <div className="filter-section">
+        <button 
+          className={`btn btn-outline ${showFilters ? "active" : ""}`}
+          onClick={() => setShowFilters(!showFilters)}
         >
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Submission Details</h2>
-              <button className="close-btn" onClick={() => setShowDetail(false)}>
-                ✕
+          🔍 {showFilters ? "Hide" : "Show"} Filters
+        </button>
+
+        {showFilters && (
+          <div className="filter-panel">
+            <div className="filter-row">
+              <div className="filter-group">
+                <label>Status</label>
+                <select 
+                  value={filters.status}
+                  onChange={(e) => updateFilter("status", e.target.value)}
+                >
+                  <option value="">All Statuses</option>
+                  <option value="Accepted">Accepted</option>
+                  <option value="Wrong Answer">Wrong Answer</option>
+                  <option value="Runtime Error">Runtime Error</option>
+                  <option value="Time Limit Exceeded">Time Limit Exceeded</option>
+                  <option value="Pending">Pending Review</option>
+                </select>
+              </div>
+
+              <div className="filter-group">
+                <label>Problem</label>
+                <input 
+                  type="text"
+                  placeholder="Filter by problem..."
+                  value={filters.problemId}
+                  onChange={(e) => updateFilter("problemId", e.target.value)}
+                />
+              </div>
+
+              <button 
+                className="btn btn-secondary"
+                onClick={resetFilters}
+              >
+                Reset Filters
               </button>
             </div>
-            <div className="modal-content">
-              <p>
-                <strong>Problem:</strong> {selectedSubmission.problemId?.name}
-              </p>
-              <p>
-                <strong>Status:</strong>{" "}
-                <span className={`badge badge-${selectedSubmission.status}`}>
-                  {selectedSubmission.status}
-                </span>
-              </p>
-              <p>
-                <strong>Score:</strong> {selectedSubmission.score || 0}
-              </p>
-              <p>
-                <strong>Submitted:</strong>{" "}
-                {new Date(selectedSubmission.createdAt).toLocaleString()}
-              </p>
-              <div className="code-section">
-                <h3>Code:</h3>
-                <pre>{selectedSubmission.code}</pre>
-              </div>
-              {selectedSubmission.feedback && (
-                <div className="feedback-section">
-                  <h3>Feedback:</h3>
-                  <p>{selectedSubmission.feedback}</p>
-                </div>
-              )}
-            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+
+      {/* Main Content */}
+      <div className="content-area">
+        {loading && <div className="loading">Loading submissions...</div>}
+        {error && <div className="error-message">⚠️ {error}</div>}
+        
+        {!loading && filteredSubmissions.length === 0 && (
+          <div className="empty-state">
+            <div className="empty-icon">📭</div>
+            <h3>No Submissions Yet</h3>
+            <p>Start solving problems and submit your solutions</p>
+            <button className="btn btn-primary" onClick={() => navigate("/student/problems")}>
+              Browse Problems
+            </button>
+          </div>
+        )}
+
+        {!loading && filteredSubmissions.length > 0 && (
+          <>
+            <DataTable 
+              columns={columns} 
+              data={paginatedData}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+              onSort={(key) => {
+                if (sortBy === key) {
+                  setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                } else {
+                  setSortBy(key);
+                  setSortOrder("asc");
+                }
+              }}
+            />
+            
+            {totalPages > 1 && (
+              <div className="pagination-area">
+                <div className="pagination-info">
+                  Showing {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, filteredSubmissions.length)} of {filteredSubmissions.length}
+                </div>
+                <div className="pagination-controls">
+                  <button 
+                    disabled={currentPage === 1}
+                    onClick={() => goToPage(1)}
+                  >
+                    First
+                  </button>
+                  <button 
+                    disabled={currentPage === 1}
+                    onClick={() => goToPage(currentPage - 1)}
+                  >
+                    Previous
+                  </button>
+                  
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <button
+                      key={page}
+                      className={currentPage === page ? "active" : ""}
+                      onClick={() => goToPage(page)}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  
+                  <button 
+                    disabled={currentPage === totalPages}
+                    onClick={() => goToPage(currentPage + 1)}
+                  >
+                    Next
+                  </button>
+                  <button 
+                    disabled={currentPage === totalPages}
+                    onClick={() => goToPage(totalPages)}
+                  >
+                    Last
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };

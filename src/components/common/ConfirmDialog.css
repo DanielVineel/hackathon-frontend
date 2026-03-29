@@ -1,0 +1,11 @@
+/* ConfirmDialog Styles */
+
+.confirm-dialog-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.confirm-dialog-actions .btn {
+  flex: 1;
+}

@@ -33,19 +33,18 @@ const Dashboard = () => {
       setLoading(true);
       
       // Fetch statistics
-      const [events, students, managers, submissions, payments] = await Promise.all([
-        API.get("/events"),
-        API.get("/students"),
-        API.get("/managers"),
-        API.get("/submissions"),
-        API.get("/payments")
+      const [events, students, managers, submissions] = await Promise.all([
+        API.get("/superadmin/events"),
+        API.get("/superadmin/students"),
+        API.get("/superadmin/managers"),
+        API.get("/superadmin/submissions")
       ]);
 
       const eventData = events.data?.data || [];
       const studentData = students.data?.data || [];
       const managerData = managers.data?.data || [];
       const submissionData = submissions.data?.data || [];
-      const paymentData = payments.data?.data || [];
+      const paymentData = []; // Payments endpoint not yet configured
 
       // Calculate stats
       const ongoingCount = eventData.filter(e => e.status === "ongoing").length;

@@ -6,7 +6,7 @@ import { getCurrentAuth, logout, saveAuth } from "../utils/blutoAuth";
  * Supports multiple user types: Student, Manager, SuperAdmin
  * Handles token refresh automatically
  */
-const API = axios.create({
+export const API = axios.create({
   baseURL: import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api",
   timeout: 10000,
   headers: {

@@ -1,62 +1,100 @@
 // src/components/common/Sidebar.jsx
-import React from "react";
+import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
 
-const Sidebar = ({ role }) => {
-  const links = {
-    student: [
-      { path: "/student/dashboard", label: "Dashboard" },
-      { path: "/student/events", label: "Events" },
-      { path: "/student/problems", label: "Problems" },
-      { path: "/student/certificates", label: "Certificates" },
-      { path: "/student/event-history", label: "Event History" },
-      { path: "/student/problem-history", label: "Problem History" },
-      { path: "/student/payment-history", label: "Payment History" },
-      { path: "/student/settings", label: "Settings" },
-    ],
-    manager: [
-      { path: "/manager/dashboard", label: "Dashboard" },
-      { path: "/manager/events", label: "Events" },
-      { path: "/manager/create-event", label: "Create Event" },
-      { path: "/manager/problems", label: "Problems" },
-      { path: "/manager/submissions", label: "Submissions" },
-      { path: "/manager/certificates", label: "Certificates" },
-      { path: "/manager/analytics", label: "Analytics" },
-      { path: "/manager/settings", label: "Settings" },
-    ],
-    superadmin: [
-      { path: "/superadmin/dashboard", label: "Dashboard" },
-      { path: "/superadmin/problems", label: "Problems" },
-      { path: "/superadmin/myproblems", label: "My Problems" },
-      { path: "/superadmin/events", label: "Events" },
-      { path: "/superadmin/myevents", label: " My Events" },
-      { path: "/superadmin/events-registrations", label: "Event Registrations" },
-      { path: "/superadmin/submissions", label: "Submissions" },
-      { path: "/superadmin/certificates", label: "Certificates" },
-      { path: "/superadmin/payments", label: "Payments" },
-      { path: "/superadmin/users", label: "Users" },
-      { path: "/superadmin/settings", label: "Settings" },
-    ],
-  };
+import {
+  FaHome,
+  FaCalendar,
+  FaCode,
+  FaCog,
+  FaCertificate,
+  FaHistory,
+  FaMoneyBill,
+  FaUsers,
+  FaChartBar,
+  FaPlus,
+  FaBars,
+  FaFileAlt,
+  FaLightbulb,
+  FaEnvelope,
+} from "react-icons/fa";
 
+const links = {
+  student: [
+    { path: "/student/dashboard", label: "Dashboard", icon: <FaHome /> },
+    { path: "/student/points", label: "Points & Achievements", icon: <FaChartBar /> },
+    { path: "/student/calendar", label: "Calendar", icon: <FaCalendar /> },
+    { path: "/student/activity-intensity", label: "Activity Insights", icon: <FaChartBar /> },
+    { path: "/student/events", label: "Events", icon: <FaCalendar /> },
+    { path: "/student/problems", label: "Problems", icon: <FaCode /> },
+    { path: "/student/global-leaderboard", label: "Leaderboard", icon: <FaChartBar /> },
+    { path: "/student/certificates", label: "Certificates", icon: <FaCertificate /> },
+    { path: "/student/profile", label: "Profile", icon: <FaUsers /> },
+    { path: "/student/event-history", label: "Event History", icon: <FaHistory /> },
+    { path: "/student/problem-history", label: "Problem History", icon: <FaHistory /> },
+    { path: "/student/payment-history", label: "Payment History", icon: <FaMoneyBill /> },
+    { path: "/student/settings", label: "Settings", icon: <FaCog /> },
+  ],
+  manager: [
+    { path: "/manager/dashboard", label: "Dashboard", icon: <FaHome /> },
+    { path: "/manager/problems", label: "Problems", icon: <FaCode /> },
+    { path: "/manager/events", label: "Events", icon: <FaCalendar /> },
+    { path: "/manager/submissions", label: "Submissions", icon: <FaCode /> },
+    { path: "/manager/certificates", label: "Certificates", icon: <FaCertificate /> },
+    { path: "/manager/analytics", label: "Analytics", icon: <FaChartBar /> },
+    { path: "/manager/settings", label: "Settings", icon: <FaCog /> },
+  ],
+  superadmin: [
+    { path: "/superadmin/dashboard", label: "Dashboard", icon: <FaHome /> },
+    { path: "/superadmin/problems", label: "Problems", icon: <FaCode /> },
+    { path: "/superadmin/events", label: "Events", icon: <FaCalendar /> },
+    { path: "/superadmin/events-registrations", label: "Registrations", icon: <FaUsers /> },
+    { path: "/superadmin/submissions", label: "Submissions", icon: <FaCode /> },
+    { path: "/superadmin/certificates", label: "Certificates", icon: <FaCertificate /> },
+    { path: "/superadmin/payments", label: "Payments", icon: <FaMoneyBill /> },
+    { path: "/superadmin/users", label: "Users", icon: <FaUsers /> },
+    { path: "/superadmin/reports", label: "Reports", icon: <FaFileAlt /> },
+    { path: "/superadmin/improvements", label: "Improvements", icon: <FaLightbulb /> },
+    { path: "/superadmin/contacts", label: "Contacts", icon: <FaEnvelope /> },
+    { path: "/superadmin/settings", label: "Settings", icon: <FaCog /> },
+  ],
+};
+
+const Sidebar = ({ role }) => {
+  const [collapsed, setCollapsed] = useState(false);
   const roleLinks = links[role] || [];
 
   return (
-    <div className="sidebar" role="navigation" aria-label="Sidebar menu">
-      <h5 className="sidebar-title">Menu</h5>
+    <div className={`sidebar ${collapsed ? "collapsed" : ""}`}>
+      
+      {/* Toggle Button */}
+      <div className="sidebar-header">
+        <h5 className="sidebar-title">Menu</h5>
+        <button
+          className="toggle-btn"
+          onClick={() => setCollapsed(!collapsed)}
+        >
+          <FaBars />
+        </button>
+      </div>
 
       <ul className="sidebar-nav">
         {roleLinks.map((link) => (
-          <li className="nav-item" key={link.path}>
+          <li key={link.path}>
             <NavLink
               to={link.path}
               className={({ isActive }) =>
                 "nav-link" + (isActive ? " active" : "")
               }
-              aria-current={({ isActive }) => (isActive ? "page" : undefined)}
             >
-              {link.label}
+              <span className="icon">{link.icon}</span>
+              <span className="link-text">{link.label}</span>
+
+              {/* Tooltip */}
+              {collapsed && (
+                <span className="tooltip">{link.label}</span>
+              )}
             </NavLink>
           </li>
         ))}
@@ -66,4 +104,3 @@ const Sidebar = ({ role }) => {
 };
 
 export default Sidebar;
-

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import API from "../../api/api";
-import "../styles/StudentLeaderboard.css";
 
 const GlobalLeaderboard = () => {
   const [leaderboard, setLeaderboard] = useState([]);

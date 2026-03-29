@@ -1,344 +1,512 @@
-import React, { useState, useEffect } from "react";
+// src/pages/manager/Problems.jsx
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Pagination from "../../components/common/Pagination";
-import { getBlutoStorage, setBlutoStorage } from "../../utils/storage";
-import { applyFilters } from "../../utils/filters";
-import { paginateArray } from "../../utils/pagination";
 import API from "../../api/api";
-import "../styles/ManagerProblems.css";
+import DataTable from "../../components/common/DataTable";
+import ConfirmDialog from "../../components/common/ConfirmDialog";
+import { CreateProblem, UpdateProblem } from "./operations";
+import "../../styles/EnhancedPages.css";
+import "./Problems.css";
 
-const ManagerProblems = () => {
+const Problems = () => {
   const navigate = useNavigate();
   const [problems, setProblems] = useState([]);
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState("desc");
+
+  // Filters
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    searchTerm: "",
+    difficulty: "all"
+  });
+
+  // Bulk operations
+  const [selectedProblems, setSelectedProblems] = useState([]);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 6;
+  const ITEMS_PER_PAGE = 10;
 
-  // Filters with bluto namespace
-  const [searchTerm, setSearchTerm] = useState(
-    getBlutoStorage("manager-problems-search", "")
-  );
-  const [selectedEvent, setSelectedEvent] = useState(
-    getBlutoStorage("manager-problems-event", "all")
-  );
-  const [sortBy, setSortBy] = useState(
-    getBlutoStorage("manager-problems-sort", "name")
-  );
-  const [sortOrder, setSortOrder] = useState(
-    getBlutoStorage("manager-problems-sort-order", "asc")
-  );
-  const [showModal, setShowModal] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    statement: "",
-    difficulty: "medium",
-    score: 100,
-    eventId: "",
-    reusable: false,
-    sampleTestCases: [],
-    hiddenTestCases: [],
-  });
+  // Modals
+  const [selectedProblem, setSelectedProblem] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showCreateProblemModal, setShowCreateProblemModal] = useState(false);
+  const [showUpdateProblemModal, setShowUpdateProblemModal] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
 
-  const fetchData = async () => {
+
+  // Fetch problems
+  const fetchProblems = async () => {
     try {
-      const [problemsRes, eventsRes] = await Promise.all([
-        API.get("/manager/problems").catch(() => ({ data: { data: [] } })),
-        API.get("/manager/events").catch(() => ({ data: { data: [] } })),
-      ]);
-      setProblems(problemsRes.data?.data || []);
-      setEvents(eventsRes.data?.data || []);
+      setLoading(true);
+      setError(null);
+      const response = await API.get("/manager/problems");
+      setProblems(response.data?.data || response.data?.problems || []);
+      setCurrentPage(1);
     } catch (err) {
-      console.error("Error:", err);
+      setError("Failed to load problems. Please try again.");
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSave = async (e) => {
-    e.preventDefault();
-    try {
-      if (editingId) {
-        await API.put(`/manager/problems/${editingId}`, formData);
-        alert("Problem updated!");
-      } else {
-        await API.post("/manager/problems", formData);
-        alert("Problem created!");
-      }
-      setShowModal(false);
-      resetForm();
-      fetchData();
-    } catch (err) {
-      alert("Error saving problem");
-    }
-  };
+  useEffect(() => {
+    fetchProblems();
+  }, []);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this problem?")) return;
-    try {
-      await API.delete(`/manager/problems/${id}`);
-      setProblems(problems.filter((p) => p._id !== id));
-    } catch (err) {
-      alert("Error deleting problem");
-    }
-  };
+  // Filtered and sorted data
+  const filteredData = React.useMemo(() => {
+    let filtered = [...problems];
 
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      statement: "",
-      difficulty: "medium",
-      score: 100,
-      eventId: "",
-      reusable: false,
-      sampleTestCases: [],
-      hiddenTestCases: [],
+    if (filters.searchTerm) {
+      const term = filters.searchTerm.toLowerCase();
+      filtered = filtered.filter(problem =>
+        problem.title?.toLowerCase().includes(term) ||
+        problem.name?.toLowerCase().includes(term) ||
+        problem.description?.toLowerCase().includes(term)
+      );
+    }
+
+    if (filters.difficulty !== "all") {
+      filtered = filtered.filter(problem => problem.difficulty === filters.difficulty || problem.level === filters.difficulty);
+    }
+
+    filtered.sort((a, b) => {
+      let aVal = a[sortBy];
+      let bVal = b[sortBy];
+
+      if (!aVal) aVal = "";
+      if (!bVal) bVal = "";
+
+      if (aVal < bVal) return sortOrder === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortOrder === "asc" ? 1 : -1;
+      return 0;
     });
-    setEditingId(null);
-  };
 
-  const filteredProblems = applyFilters(problems, {
-    searchTerm,
-    searchFields: ["name", "statement"],
-    sortBy,
-    sortOrder,
-  }).filter((problem) => {
-    return selectedEvent === "all" || problem.eventId === selectedEvent;
-  });
+    return filtered;
+  }, [problems, filters, sortBy, sortOrder]);
 
-  const paginatedData = paginateArray(
-    filteredProblems,
-    currentPage,
-    ITEMS_PER_PAGE
+  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
   );
 
-  const handleSearchChange = (e) => {
-    const term = e.target.value;
-    setSearchTerm(term);
-    setBlutoStorage("manager-problems-search", term);
-    setCurrentPage(1);
+  // Stats
+  const stats = React.useMemo(() => {
+    return {
+      total: problems.length,
+      easy: problems.filter(p => p.difficulty === "easy" || p.level === "easy").length,
+      medium: problems.filter(p => p.difficulty === "medium" || p.level === "medium").length,
+      hard: problems.filter(p => p.difficulty === "hard" || p.level === "hard").length
+    };
+  }, [problems]);
+
+  // Handlers
+  const handleSort = (key) => {
+    if (sortBy === key) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(key);
+      setSortOrder("asc");
+    }
   };
 
-  const handleEventChange = (e) => {
-    const event = e.target.value;
-    setSelectedEvent(event);
-    setBlutoStorage(handleSearchChange}
-          className="search-input"
+  const handleSelectProblem = (problemId) => {
+    setSelectedProblems(prev =>
+      prev.includes(problemId)
+        ? prev.filter(id => id !== problemId)
+        : [...prev, problemId]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedProblems.length === paginatedData.length) {
+      setSelectedProblems([]);
+    } else {
+      setSelectedProblems(paginatedData.map(p => p._id));
+    }
+  };
+
+  const handleCreate = () => {
+    setSelectedProblem(null);
+    setShowCreateProblemModal(true);
+  };
+
+  const handleEdit = (problem) => {
+    setSelectedProblem(problem);
+    setShowUpdateProblemModal(true);
+  };
+
+  const handleDelete = (problem) => {
+    setDeleteTarget(problem);
+    setShowConfirmDelete(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      setLoading(true);
+      await API.delete(`/manager/problem/${deleteTarget._id}`);
+      setShowConfirmDelete(false);
+      alert("Problem deleted successfully!");
+      fetchProblems();
+    } catch (err) {
+      alert("Error deleting problem: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedProblems.length === 0) return;
+    if (!window.confirm(`Delete ${selectedProblems.length} problem(s)?`)) return;
+
+    try {
+      setLoading(true);
+      await Promise.all(selectedProblems.map(id => API.delete(`/manager/problem/${id}`)));
+      setSelectedProblems([]);
+      alert("Problems deleted successfully!");
+      fetchProblems();
+    } catch (err) {
+      alert("Error deleting problems: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getDifficultyColor = (difficulty) => {
+    if (difficulty === "easy") return "easy";
+    if (difficulty === "medium") return "medium";
+    if (difficulty === "hard") return "hard";
+    return "medium";
+  };
+
+  // DataTable columns
+  const columns = [
+    {
+      key: "checkbox",
+      header: (
+        <input
+          type="checkbox"
+          checked={selectedProblems.length === paginatedData.length && paginatedData.length > 0}
+          onChange={handleSelectAll}
         />
-        <select value={selectedEvent} onChange={handleEventChange} className="event-select">
-          <option value="all">All Events</option>
-          {events.map((e) => (
-            <option key={e._id} value={e._id}>
-              {e.name}
-            </option>
-          ))}
-        </select>
-        <select
-          value={sortBy}
-          onChange={(e) => handleSortChange(e.target.value, sortOrder)}
-          className="sort-select"
-        >
-          <option value="name">Sort by Name</option>
-          <option value="difficulty">Sort by Difficulty</option>
-          <option value="score">Sort by Score</option>
-        </select>
-        <button
-          className="sort-order-btn"
-          onClick={() =>
-            handleSortChange(sortBy, sortOrder === "asc" ? "desc" : "asc")
-          }
-          title="Toggle sort order"
-        >
-          {sortOrder === "asc" ? "↑" : "↓"}
-        </buttonge(1);
-  };
+      ),
+      render: (row) => (
+        <input
+          type="checkbox"
+          checked={selectedProblems.includes(row._id)}
+          onChange={() => handleSelectProblem(row._id)}
+        />
+      ),
+      width: "50px"
+    },
+    {
+      key: "title",
+      header: "Problem Title",
+      sortable: true,
+      render: (row) => (
+        <div>
+          <div className="font-bold">{row.title || row.name}</div>
+          <div className="text-sm text-gray-500">{row.description?.substring(0, 40)}...</div>
+        </div>
+      )
+    },
+    {
+      key: "difficulty",
+      header: "Difficulty",
+      sortable: true,
+      render: (row) => (
+        <span className={`status-badge difficulty-${getDifficultyColor(row.difficulty || row.level)}`}>
+          {(row.difficulty || row.level || "Easy").toUpperCase()}
+        </span>
+      )
+    },
+    {
+      key: "score",
+      header: "Points",
+      sortable: true,
+      render: (row) => `${row.score || 100}`
+    },
+    {
+      key: "submissions",
+      header: "Submissions",
+      sortable: true,
+      render: (row) => row.submissions || 0
+    },
+    {
+      key: "reusableInEvent",
+      header: "Reusable",
+      render: (row) => row.reusableInEvent ? "✓ Yes" : "✗ No"
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      render: (row) => (
+        <div className="flex gap-2">
+          <button
+            className="btn btn-sm btn-info"
+            onClick={() => {
+              setSelectedProblem(row);
+              setShowDetailsModal(true);
+            }}
+          >
+            View
+          </button>
+          <button
+            className="btn btn-sm btn-primary"
+            onClick={() => handleEdit(row)}
+          >
+            Edit
+          </button>
+          <button
+            className="btn btn-sm btn-danger"
+            onClick={() => handleDelete(row)}
+          >
+            Delete
+          </button>
+        </div>
+      )
+    }
+  ];
 
-  if (loading) return <div className="loading">Loading...</div>;
+  if (loading && !problems.length) {
+    return <div className="p-8 text-center">Loading problems...</div>;
+  }
 
   return (
-    <div className="manager-problems">
-      <div className="header">
-        <h1>Problems</h1>
-        <button className="btn-create" onClick={() => setShowModal(true)}>
-          ➕ Create Problem
+    <div className="enhanced-page-container">
+      {/* Page Header */}
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Problems Management</h1>
+          <p className="page-subtitle">Create and manage coding problems</p>
+        </div>
+        <button className="btn btn-primary" onClick={handleCreate}>
+          + Create Problem
         </button>
-      <paginatedData.data.length > 0 ? (
-        <>
-          <div className="problems-grid">
-            {paginatedData.datars">
-        <input
-          type="text"
-          placeholder="Search problems..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <select value={selectedEvent} onChange={(e) => setSelectedEvent(e.target.value)}>
-          <option value="all">All Events</option>
-          {events.map((e) => (
-            <option key={e._id} value={e._id}>
-              {e.name}
-            </option>
-          ))}
-        </select>
       </div>
 
-      {filteredProblems.length > 0 ? (
-        <div className="problems-grid">
-          {filteredProblems.map((problem) => (
-            <div key={problem._id} className="problem-card">
-              <div className="card-header">
-                <h3>{problem.name}</h3>
-                <span className={`difficulty ${problem.difficulty}`}>
-                  {problem.difficulty}
-                </span>
-              </div>
-              <p>{problem.statement?.substring(0, 100)}...</p>
-              <div className="card-meta">
-                <span>Score: {problem.score}</span>
-                <span>Tests: {(problem.sampleTestCases?.length || 0) + (problem.hiddenTestCases?.length || 0)}</span>
-              </div>
-          </div>
-
-          <Pagination
-            currentPage={currentPage}
-            totalPages={paginatedData.pages}
-            onPageChange={setCurrentPage}
-            itemsPerPage={ITEMS_PER_PAGE}
-            totalItems={filteredProblems.length}
-          />
-        </ <div className="card-actions">
-                <button
-                  className="btn-edit"
-                  onClick={() => {
-                    setFormData(problem);
-                    setEditingId(problem._id);
-                    setShowModal(true);
-                  }}
-                >
-                  Edit
-                </button>
-                <button
-                  className="btn-delete"
-                  onClick={() => handleDelete(problem._id)}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
+      {/* Stats Bar */}
+      <div className="stats-bar">
+        <div className="stat-card">
+          <div className="stat-label">Total Problems</div>
+          <div className="stat-value">{stats.total}</div>
         </div>
-      ) : (
-        <div className="empty">No problems found</div>
+        <div className="stat-card">
+          <div className="stat-label">Easy</div>
+          <div className="stat-value text-green-500">{stats.easy}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Medium</div>
+          <div className="stat-value text-orange-500">{stats.medium}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Hard</div>
+          <div className="stat-value text-red-500">{stats.hard}</div>
+        </div>
+      </div>
+
+      {/* Error Message */}
+      {error && <div className="error-message">⚠️ {error}</div>}
+
+      {/* Bulk Actions */}
+      {selectedProblems.length > 0 && (
+        <div className="bulk-actions-toolbar">
+          <span>{selectedProblems.length} problem(s) selected</span>
+          <button className="btn btn-sm btn-danger" onClick={handleBulkDelete}>
+            Delete Selected
+          </button>
+          <button className="btn btn-sm btn-secondary" onClick={() => setSelectedProblems([])}>
+            Clear Selection
+          </button>
+        </div>
       )}
 
-      {/* Modal */}
-      {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>{editingId ? "Edit Problem" : "Create Problem"}</h2>
-              <button
-                className="close-btn"
-                onClick={() => {
-                  setShowModal(false);
-                  resetForm();
-                }}
+      {/* Filter Section */}
+      <div className="filter-section">
+        <button
+          className="filter-toggle"
+          onClick={() => setShowFilters(!showFilters)}
+        >
+          🔍 Filters {showFilters ? "▾" : "▸"}
+        </button>
+
+        {showFilters && (
+          <div className="filter-panel">
+            <div className="filter-group">
+              <label>Search</label>
+              <input
+                type="text"
+                placeholder="Search problems..."
+                value={filters.searchTerm}
+                onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
+                className="form-input"
+              />
+            </div>
+
+            <div className="filter-group">
+              <label>Difficulty</label>
+              <select
+                value={filters.difficulty}
+                onChange={(e) => setFilters({ ...filters, difficulty: e.target.value })}
+                className="form-input"
               >
-                ✕
+                <option value="all">All Difficulties</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+
+            <button
+              className="btn btn-secondary"
+              onClick={() => setFilters({ searchTerm: "", difficulty: "all" })}
+            >
+              Reset Filters
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Content Area */}
+      <div className="content-area">
+        {filteredData.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">📭</div>
+            <h3>No Problems Found</h3>
+            <p>Create your first problem to get started</p>
+            <button className="btn btn-primary" onClick={handleCreate}>
+              Create Problem
+            </button>
+          </div>
+        ) : (
+          <>
+            <DataTable
+              columns={columns}
+              data={paginatedData}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+              onSort={handleSort}
+            />
+
+            {/* Pagination */}
+            <div className="pagination-area">
+              <span className="pagination-info">
+                Page {currentPage} of {totalPages} | Showing {paginatedData.length} of {filteredData.length}
+              </span>
+              <div className="pagination-controls">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  ←
+                </button>
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const page = Math.max(1, currentPage - 2) + i;
+                  return page <= totalPages ? (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={currentPage === page ? "active" : ""}
+                    >
+                      {page}
+                    </button>
+                  ) : null;
+                })}
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  →
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      <CreateProblem
+        isOpen={showCreateProblemModal}
+        onClose={() => setShowCreateProblemModal(false)}
+        onSuccess={fetchProblems}
+      />
+
+      <UpdateProblem
+        isOpen={showUpdateProblemModal}
+        problem={selectedProblem}
+        onClose={() => setShowUpdateProblemModal(false)}
+        onSuccess={fetchProblems}
+      />
+
+      {/* Details Modal */}
+      {showDetailsModal && selectedProblem && (
+        <Modal
+          isOpen={showDetailsModal}
+          onClose={() => setShowDetailsModal(false)}
+          title={selectedProblem.title || selectedProblem.name}
+        >
+          <div className="modal-content">
+            <div className="details-row">
+              <div className="label">Title:</div>
+              <span>{selectedProblem.title || selectedProblem.name}</span>
+            </div>
+            <div className="details-row">
+              <div className="label">Description:</div>
+              <span>{selectedProblem.description}</span>
+            </div>
+            <div className="details-row">
+              <div className="label">Difficulty:</div>
+              <span className={`status-badge difficulty-${getDifficultyColor(selectedProblem.difficulty || selectedProblem.level)}`}>
+                {(selectedProblem.difficulty || selectedProblem.level || "Easy").toUpperCase()}
+              </span>
+            </div>
+            <div className="details-row">
+              <div className="label">Points:</div>
+              <span>{selectedProblem.score || 100}</span>
+            </div>
+            <div className="details-row">
+              <div className="label">Submissions:</div>
+              <span>{selectedProblem.submissions || 0}</span>
+            </div>
+            <div className="details-row">
+              <div className="label">Reusable in Events:</div>
+              <span>{selectedProblem.reusableInEvent ? "✓ Yes" : "✗ No"}</span>
+            </div>
+            <div className="modal-actions">
+              <button className="btn btn-secondary" onClick={() => setShowDetailsModal(false)}>
+                Close
+              </button>
+              <button className="btn btn-primary" onClick={() => {
+                handleEdit(selectedProblem);
+                setShowDetailsModal(false);
+              }}>
+                Edit Problem
               </button>
             </div>
-            <form onSubmit={handleSave} className="modal-form">
-              <div className="form-group">
-                <label>Name *</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Statement *</label>
-                <textarea
-                  value={formData.statement}
-                  onChange={(e) =>
-                    setFormData({ ...formData, statement: e.target.value })
-                  }
-                  rows="5"
-                  required
-                />
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Difficulty</label>
-                  <select
-                    value={formData.difficulty}
-                    onChange={(e) =>
-                      setFormData({ ...formData, difficulty: e.target.value })
-                    }
-                  >
-                    <option>easy</option>
-                    <option>medium</option>
-                    <option>hard</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Score</label>
-                  <input
-                    type="number"
-                    value={formData.score}
-                    onChange={(e) =>
-                      setFormData({ ...formData, score: parseInt(e.target.value) })
-                    }
-                  />
-                </div>
-              </div>
-              <div className="form-group">
-                <label>Event</label>
-                <select
-                  value={formData.eventId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, eventId: e.target.value })
-                  }
-                >
-                  <option value="">Select Event</option>
-                  {events.map((e) => (
-                    <option key={e._id} value={e._id}>
-                      {e.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-actions">
-                <button type="submit" className="btn-submit">
-                  {editingId ? "Update" : "Create"}
-                </button>
-                <button
-                  type="button"
-                  className="btn-cancel"
-                  onClick={() => {
-                    setShowModal(false);
-                    resetForm();
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
           </div>
-        </div>
+        </Modal>
+      )}
+
+      {/* Confirm Delete Modal */}
+      {showConfirmDelete && deleteTarget && (
+        <ConfirmDialog
+          isOpen={showConfirmDelete}
+          title="Delete Problem"
+          message={`Are you sure you want to delete "${deleteTarget.title || deleteTarget.name}"? This action cannot be undone.`}
+          onConfirm={confirmDelete}
+          onCancel={() => setShowConfirmDelete(false)}
+          isDangerous={true}
+        />
       )}
     </div>
   );
 };
 
-export default ManagerProblems;
+export default Problems;

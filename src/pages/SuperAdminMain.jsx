@@ -4,15 +4,16 @@ import SuperAdminLayout from "../layouts/SuperAdminLayout";
 
 import Dashboard from "./superadmin/Dashboard";
 import Problems from "./superadmin/Problems";
-import MyProblems from "./superadmin/MyProblems";
 import Events from "./superadmin/Events";
-import MyEvents from "./superadmin/MyEvents";
 import EventRegistrations from "./superadmin/EventRegistrations";
 import Submissions from "./superadmin/Submissions";
 import Certificates from "./superadmin/Certificates";
 import Payments from "./superadmin/Payments";
 import Users from "./superadmin/Users";
 import Settings from "./superadmin/Settings";
+import Reports from "./superadmin/Reports";
+import Improvements from "./superadmin/Improvements";
+import Contacts from "./superadmin/Contacts";
 
 
 import ProtectedRoute from "../components/common/ProtectedRoute";
@@ -41,28 +42,10 @@ const SuperAdminRoutes = () => {
         />
 
         <Route
-          path="myproblems"
-          element={
-            <ProtectedRoute role="superadmin">
-              <MyProblems />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
           path="events"
           element={
             <ProtectedRoute role="superadmin">
               <Events />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="myevents"
-          element={
-            <ProtectedRoute role="superadmin">
-              <MyEvents />
             </ProtectedRoute>
           }
         />
@@ -121,8 +104,32 @@ const SuperAdminRoutes = () => {
           }
         />
 
+        <Route
+          path="reports"
+          element={
+            <ProtectedRoute role="superadmin">
+              <Reports />
+            </ProtectedRoute>
+          }
+        />
 
+        <Route
+          path="improvements"
+          element={
+            <ProtectedRoute role="superadmin">
+              <Improvements />
+            </ProtectedRoute>
+          }
+        />
 
+        <Route
+          path="contacts"
+          element={
+            <ProtectedRoute role="superadmin">
+              <Contacts />
+            </ProtectedRoute>
+          }
+        />
 
        
 

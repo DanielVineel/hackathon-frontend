@@ -1,689 +1,687 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Pagination from "../../components/common/Pagination";
-import { getBlutoStorage, setBlutoStorage } from "../../utils/storage";
-import "../styles/ProblemsPage.css";
+import API from "../../api/api";
+import DataTable from "../../components/common/DataTable";
+import Modal from "../../components/common/Modal";
+import ConfirmDialog from "../../components/common/ConfirmDialog";
+import { CreateProblem, UpdateProblem } from "./operations";
+import "../../styles/EnhancedPages.css";
+import "./Problems.css";
 
-const SuperAdminProblems = () => {
+const Problems = () => {
   const navigate = useNavigate();
   const [problems, setProblems] = useState([]);
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState("desc");
+
+  // TAB STATE
+  const [activeTab, setActiveTab] = useState("all"); // "all" or "myProblems"
+
+  // Filters
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    searchTerm: "",
+    level: "all"
+  });
+
+  // Bulk operations
+  const [selectedProblems, setSelectedProblems] = useState([]);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 6;
+  const ITEMS_PER_PAGE = 10;
 
-  // Filters with bluto namespace
-  const [searchTerm, setSearchTerm] = useState(
-    getBlutoStorage("superadmin-problems-search", "")
-  );
-  const [selectedEvent, setSelectedEvent] = useState(
-    getBlutoStorage("superadmin-problems-event", "all")
-  );
-  const [selectedLevel, setSelectedLevel] = useState(
-    getBlutoStorage("superadmin-problems-level", "all")
-  );
-  const [sortBy, setSortBy] = useState(
-    getBlutoStorage("superadmin-problems-sort", "name")
-  );
-  const [sortOrder, setSortOrder] = useState(
-    getBlutoStorage("superadmin-problems-sort-order", "asc")
-  );
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [editingProblem, setEditingProblem] = useState(null);
-  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  // Modals
+  const [selectedProblem, setSelectedProblem] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showCreateProblemModal, setShowCreateProblemModal] = useState(false);
+  const [showUpdateProblemModal, setShowUpdateProblemModal] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
-  // Form state
-  const [formData, setFormData] = useState({
-    name: "",
-    statement: "",
-    level: "easy",
-    score: 100,
-    sampleTestCases: [{ input: "", output: "", explanation: "" }],
-    hiddenTestCases: [{ input: "", output: "" }],
-  });
-
-  useEffect(() => {
-    fetchProblems();
-    fetchEvents();
-  }, []);
-
-  const fetchProblems = async () => {
+  // Fetch all problems (reusable in events)
+  const fetchAllProblems = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/problems", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("bluto_superadmin_token")}`,
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setProblems(data.problems || []);
-      } else {
-        console.error("Failed to fetch problems");
-      }
-    } catch (error) {
-      console.error("Error fetching problems:", error);
+      setError(null);
+      const response = await API.get("/problems");
+      
+      const problemsData = response.data?.problems || [];
+      const problemsArray = Array.isArray(problemsData) ? problemsData : [];
+      
+      setProblems(problemsArray);
+      setCurrentPage(1);
+    } catch (err) {
+      setError("Failed to load problems. Please try again.");
+      console.error(err);
+      setProblems([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchEvents = async () => {
+  // Fetch my created problems
+  const fetchMyProblems = async () => {
     try {
-      const response = await fetch("/api/events", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("bluto_superadmin_token")}`,
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setEvents(data.events || []);
-      }
-    } catch (error) {
-      console.error("Error fetching events:", error);
+      setLoading(true);
+      setError(null);
+      const response = await API.get("/superadmin/problems/created");
+      
+      const problemsData = response.data?.problems || [];
+      const problemsArray = Array.isArray(problemsData) ? problemsData : [];
+      
+      setProblems(problemsArray);
+      setCurrentPage(1);
+    } catch (err) {
+      setError("Failed to load your problems. Please try again.");
+      console.error(err);
+      setProblems([]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === "score" ? Number(value) : value,
-    }));
-  };
-
-  const handleSampleTestCaseChange = (index, field, value) => {
-    const updated = [...formData.sampleTestCases];
-    updated[index] = { ...updated[index], [field]: value };
-    setFormData((prev) => ({
-      ...prev,
-      sampleTestCases: updated,
-    }));
-  };
-
-  const handleHiddenTestCaseChange = (index, field, value) => {
-    const updated = [...formData.hiddenTestCases];
-    updated[index] = { ...updated[index], [field]: value };
-    setFormData((prev) => ({
-      ...prev,
-      hiddenTestCases: updated,
-    }));
-  };
-
-  const addSampleTestCase = () => {
-    setFormData((prev) => ({
-      ...prev,
-      sampleTestCases: [...prev.sampleTestCases, { input: "", output: "", explanation: "" }],
-    }));
-  };
-
-  const addHiddenTestCase = () => {
-    setFormData((prev) => ({
-      ...prev,
-      hiddenTestCases: [...prev.hiddenTestCases, { input: "", output: "" }],
-    }));
-  };
-
-  const removeSampleTestCase = (index) => {
-    setFormData((prev) => ({
-      ...prev,
-      sampleTestCases: prev.sampleTestCases.filter((_, i) => i !== index),
-    }));
-  };
-
-  const removeHiddenTestCase = (index) => {
-    setFormData((prev) => ({
-      ...prev,
-      hiddenTestCases: prev.hiddenTestCases.filter((_, i) => i !== index),
-    }));
-  };
-
-  const handleCreateOrUpdate = async (e) => {
-    e.preventDefault();
-    try {
-      const url = editingProblem
-        ? `/api/problems/${editingProblem._id}`
-        : "/api/problems";
-      const method = editingProblem ? "PUT" : "POST";
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("bluto_superadmin_token")}`,
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        setShowCreateModal(false);
-        setEditingProblem(null);
-        setFormData({
-          name: "",
-          statement: "",
-          level: "easy",
-          score: 100,
-          sampleTestCases: [{ input: "", output: "", explanation: "" }],
-          hiddenTestCases: [{ input: "", output: "" }],
-        });
-        fetchProblems();
-      } else {
-        alert("Error creating/updating problem");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      alert("Error creating/updating problem");
+  // Initial load
+  useEffect(() => {
+    if (activeTab === "all") {
+      fetchAllProblems();
+    } else {
+      fetchMyProblems();
     }
+  }, [activeTab]);
+
+  // Filtered and sorted data
+  const filteredData = React.useMemo(() => {
+    let filtered = [...problems];
+
+    if (filters.searchTerm) {
+      const term = filters.searchTerm.toLowerCase();
+      filtered = filtered.filter(problem =>
+        (problem.title || "").toLowerCase().includes(term) ||
+        (problem.description  || "").toLowerCase().includes(term)
+      );
+    }
+
+    if (filters.level !== "all") {
+      filtered = filtered.filter(problem => (problem.level || "easy") === filters.level);
+    }
+
+    filtered.sort((a, b) => {
+      let aVal = a[sortBy];
+      let bVal = b[sortBy];
+
+      if (!aVal) aVal = "";
+      if (!bVal) bVal = "";
+
+      if (aVal < bVal) return sortOrder === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return filtered;
+  }, [problems, filters, sortBy, sortOrder]);
+
+  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Stats
+  const stats = React.useMemo(() => {
+    return {
+      total: problems.length,
+      easy: problems.filter(p => (p.level || "easy") === "easy").length,
+      medium: problems.filter(p => (p.level || "easy") === "medium").length,
+      hard: problems.filter(p => (p.level || "easy") === "hard").length
+    };
+  }, [problems]);
+
+  // Handlers
+  const handleSort = (key) => {
+    if (sortBy === key) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(key);
+      setSortOrder("asc");
+    }
+  };
+
+  const handleSelectProblem = (problemId) => {
+    setSelectedProblems(prev =>
+      prev.includes(problemId)
+        ? prev.filter(id => id !== problemId)
+        : [...prev, problemId]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedProblems.length === paginatedData.length) {
+      setSelectedProblems([]);
+    } else {
+      setSelectedProblems(paginatedData.map(p => p._id));
+    }
+  };
+
+  const handleCreate = () => {
+    setSelectedProblem(null);
+    setShowCreateProblemModal(true);
   };
 
   const handleEdit = (problem) => {
-    setEditingProblem(problem);
-    setFormData({
-      name: problem.name,
-      statement: problem.statement,
-      level: problem.level,
-      score: problem.score,
-      sampleTestCases: problem.sampleTestCases || [{ input: "", output: "", explanation: "" }],
-      hiddenTestCases: problem.hiddenTestCases || [{ input: "", output: "" }],
-    });
-    setShowCreateModal(true);
+    setSelectedProblem(problem);
+    setShowUpdateProblemModal(true);
   };
 
-  const handleDelete = async (problemId) => {
+  const handleDelete = (problem) => {
+    setDeleteTarget(problem);
+    setShowConfirmDelete(true);
+  };
+
+  const confirmDelete = async () => {
     try {
-      const response = await fetch(`/api/problems/${problemId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("bluto_superadmin_token")}`,
-        },
-      });
-
-      if (response.ok) {
-        fetchProblems();
-        setDeleteConfirm(null);
+      setLoading(true);
+      await API.delete(`/superadmin/problem/${deleteTarget._id}`);
+      setShowConfirmDelete(false);
+      alert("Problem deleted successfully!");
+      if (activeTab === "all") {
+        fetchAllProblems();
       } else {
-        alert("Error deleting problem");
+        fetchMyProblems();
       }
-    } catch (error) {
-      console.error("Error:", error);
-      alert("Error deleting problem");
+    } catch (err) {
+      alert("Error deleting problem: " + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSearchChange = (e) => {
-    const term = e.target.value;
-    setSearchTerm(term);
-    setBlutoStorage("superadmin-problems-search", term);
-    setCurrentPage(1);
-  };
+  const handleBulkDelete = async () => {
+    if (selectedProblems.length === 0) return;
+    if (!window.confirm(`Delete ${selectedProblems.length} problem(s)?`)) return;
 
-  const handleEventChange = (e) => {
-    const value = e.target.value;
-    setSelectedEvent(value);
-    setBlutoStorage("superadmin-problems-event", value);
-    setCurrentPage(1);
-  };
-
-  const handleLevelChange = (e) => {
-    const value = e.target.value;
-    setSelectedLevel(value);
-    setBlutoStorage("superadmin-problems-level", value);
-    setCurrentPage(1);
-  };
-
-  const handleSortChange = (field, order) => {
-    setSortBy(field);
-    setSortOrder(order);
-    setBlutoStorage("superadmin-problems-sort", field);
-    setBlutoStorage("superadmin-problems-sort-order", order);
-    setCurrentPage(1);
-  };
-
-  // Filter logic: robust, case-insensitive, trims whitespace
-  const filteredProblems = problems.filter((problem) => {
-    const search = (searchTerm || "").trim().toLowerCase();
-    const name = (problem.name || "").toLowerCase();
-    const statement = (problem.statement || "").toLowerCase();
-    const matchesSearch = !search || name.includes(search) || statement.includes(search);
-    const matchesEvent = selectedEvent === "all" || (problem.events && Array.isArray(problem.events) && problem.events.includes(selectedEvent));
-    const matchesLevel = selectedLevel === "all" || problem.level === selectedLevel;
-    return matchesSearch && matchesEvent && matchesLevel;
-  });
-
-  // Sort logic
-  const sortedProblems = [...filteredProblems].sort((a, b) => {
-    let compareValue = 0;
-    if (sortBy === "name") {
-      compareValue = (a.name || "").localeCompare(b.name || "");
-    } else if (sortBy === "difficulty") {
-      const diffOrder = { easy: 1, medium: 2, hard: 3 };
-      compareValue = (diffOrder[a.level] || 0) - (diffOrder[b.level] || 0);
-    } else if (sortBy === "score") {
-      compareValue = (a.score || 0) - (b.score || 0);
+    try {
+      setLoading(true);
+      await Promise.all(selectedProblems.map(id => API.delete(`/superadmin/problem/${id}`)));
+      setSelectedProblems([]);
+      alert("Problems deleted successfully!");
+      if (activeTab === "all") {
+        fetchAllProblems();
+      } else {
+        fetchMyProblems();
+      }
+    } catch (err) {
+      alert("Error deleting problems: " + err.message);
+    } finally {
+      setLoading(false);
     }
-    return sortOrder === "asc" ? compareValue : -compareValue;
-  });
-
-  const paginatedData = {
-    data: sortedProblems.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE),
-    pages: Math.ceil(sortedProblems.length / ITEMS_PER_PAGE),
   };
 
-  if (loading) {
-    return (
-      <div className="problems-container">
-        <p>Loading problems...</p>
-      </div>
-    );
+  const getLevelColor = (level) => {
+    if (level === "easy") return "easy";
+    if (level === "medium") return "medium";
+    if (level === "hard") return "hard";
+    return "medium";
+  };
+
+  // DataTable columns
+  const columns = [
+    {
+      key: "checkbox",
+      header: (
+        <input
+          type="checkbox"
+          checked={selectedProblems.length === paginatedData.length && paginatedData.length > 0}
+          onChange={handleSelectAll}
+        />
+      ),
+      render: (row) => {
+        if (!row?._id) return null;
+        return (
+          <input
+            type="checkbox"
+            checked={selectedProblems.includes(row._id)}
+            onChange={() => handleSelectProblem(row._id)}
+          />
+        );
+      },
+      width: "50px",
+      hideOnMobile: false
+    },
+    {
+      key: "title",
+      header: "Problem Title",
+      sortable: true,
+      render: (row) => {
+        if (!row) return <div>-</div>;
+        return (
+          <div>
+            <div className="font-bold">{row.title  || "-"}</div>
+            <div className="text-sm text-gray-500 mobile-hidden">{( row.description || "").substring(0, 40)}...</div>
+          </div>
+        );
+      },
+      hideOnMobile: false
+    },
+    {
+      key: "level",
+      header: "Difficulty",
+      sortable: true,
+      render: (row) => {
+        if (!row) return <span>-</span>;
+        return (
+          <span className={`status-badge difficulty-${getLevelColor(row.level || "easy")}`}>
+            {(row.level || "easy").toUpperCase()}
+          </span>
+        );
+      },
+      hideOnMobile: true
+    },
+    {
+      key: "score",
+      header: "Points",
+      sortable: true,
+      render: (row) => {
+        if (!row) return <span>-</span>;
+        return `${row.score || 100}`;
+      },
+      hideOnMobile: false
+    },
+    {
+      key: "submissions",
+      header: "Submissions",
+      sortable: true,
+      render: (row) => {
+        if (!row) return <span>-</span>;
+        return row.submissions || 0;
+      },
+      hideOnMobile: true
+    },
+    {
+      key: "reusableInEvents",
+      header: "Reusable",
+      render: (row) => {
+        if (!row) return <span>-</span>;
+        return row.reusableInEvents ? "✓ Yes" : "✗ No";
+      },
+      hideOnMobile: true
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      render: (row) => {
+        if (!row?._id) return <span>-</span>;
+        return (
+          <div className="flex gap-2 flex-wrap actions-column">
+            <button
+              className="btn btn-sm btn-info action-btn-view"
+              onClick={() => {
+                setSelectedProblem(row);
+                setShowDetailsModal(true);
+              }}
+              title="View problem details"
+            >
+              View
+            </button>
+            <button
+              className="btn btn-sm btn-primary action-btn-edit"
+              onClick={() => handleEdit(row)}
+              title="Edit this problem"
+            >
+              Edit
+            </button>
+            <button
+              className="btn btn-sm btn-danger action-btn-delete"
+              onClick={() => handleDelete(row)}
+              title="Delete this problem"
+            >
+              Delete
+            </button>
+          </div>
+        );
+      },
+      hideOnMobile: false
+    }
+  ];
+
+  if (loading && !problems.length) {
+    return <div className="p-8 text-center">Loading problems...</div>;
   }
 
   return (
-    <div className="problems-container">
-      {/* Header */}
+    <div className="enhanced-page-container">
+      {/* Page Header */}
       <div className="page-header">
-        <h1>Problems Management</h1>
-        <button
-          className="btn-primary"
-          onClick={() => {
-            setEditingProblem(null);
-            setFormData({
-              name: "",
-              statement: "",
-              level: "easy",
-              score: 100,
-              sampleTestCases: [{ input: "", output: "", explanation: "" }],
-              hiddenTestCases: [{ input: "", output: "" }],
-            });
-            setShowCreateModal(true);
-          }}
-        >
+        <div>
+          <h1 className="page-title">Problems Management</h1>
+          <p className="page-subtitle">Create and manage coding problems</p>
+        </div>
+        <button className="btn btn-primary btn-create-fixed" onClick={handleCreate}>
           + Create Problem
         </button>
       </div>
 
-      {/* Filters */}
-      <div className="filters-section">
-        <div className="filter-group">
-          <input
-            type="text"
-            placeholder="🔍 Search problems by name or statement..."
-            value={searchTerm}
-            onChange={handleSearchChange}
-            className="filter-input"
-          />
-        </div>
+      {/* Tabs */}
+      <div className="tabs-container">
+        <button
+          className={`tab-button ${activeTab === "all" ? "active" : ""}`}
+          onClick={() => {
+            setActiveTab("all");
+            setCurrentPage(1);
+            setSelectedProblems([]);
+          }}
+        >
+          All Problems
+        </button>
+        <button
+          className={`tab-button ${activeTab === "myProblems" ? "active" : ""}`}
+          onClick={() => {
+            setActiveTab("myProblems");
+            setCurrentPage(1);
+            setSelectedProblems([]);
+          }}
+        >
+          My Created Problems
+        </button>
+      </div>
 
-        <div className="filter-group">
-          <label>Filter by Event:</label>
-          <select
-            value={selectedEvent}
-            onChange={handleEventChange}
-            className="filter-select"
-          >
-            <option value="all">All Events</option>
-            {events.map((event) => (
-              <option key={event._id} value={event._id}>
-                {event.name}
-              </option>
-            ))}
-          </select>
+      {/* Stats Bar */}
+      <div className="stats-bar">
+        <div className="stat-card">
+          <div className="stat-label">Total Problems</div>
+          <div className="stat-value">{stats.total}</div>
         </div>
-
-        <div className="filter-group">
-          <label>Filter by Difficulty:</label>
-          <select
-            value={selectedLevel}
-            onChange={handleLevelChange}
-            className="filter-select"
-          >
-            <option value="all">All Levels</option>
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-          </select>
+        <div className="stat-card">
+          <div className="stat-label">Easy</div>
+          <div className="stat-value text-green-500">{stats.easy}</div>
         </div>
-
-        <div className="filter-group">
-          <label>Sort by:</label>
-          <select
-            value={sortBy}
-            onChange={(e) => handleSortChange(e.target.value, sortOrder)}
-            className="filter-select"
-          >
-            <option value="name">Name</option>
-            <option value="difficulty">Difficulty</option>
-            <option value="score">Points</option>
-          </select>
-          <button
-            className="sort-order-btn"
-            onClick={() =>
-              handleSortChange(sortBy, sortOrder === "asc" ? "desc" : "asc")
-            }
-            title="Toggle sort order"
-          >
-            {sortOrder === "asc" ? "↑" : "↓"}
-          </button>
+        <div className="stat-card">
+          <div className="stat-label">Medium</div>
+          <div className="stat-value text-orange-500">{stats.medium}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Hard</div>
+          <div className="stat-value text-red-500">{stats.hard}</div>
         </div>
       </div>
 
-      {/* Problems List */}
-      <div className="problems-list">
-        {paginatedData.data.length === 0 ? (
-          <div className="no-problems">
-            <p>No problems found. Create one to get started! 🚀</p>
-          </div>
-        ) : (
-          <div className="problems-grid">
-            {paginatedData.data.map((problem) => (
-              <div key={problem._id} className="problem-card">
-                <div className="problem-header">
-                  <h3>{problem.name}</h3>
-                  <span className={`level-badge level-${problem.level}`}>
-                    {problem.level.toUpperCase()}
-                  </span>
-                </div>
+      {/* Error Message */}
+      {error && <div className="error-message">⚠️ {error}</div>}
 
-                <p className="problem-statement">
-                  {problem.statement.substring(0, 100)}...
-                </p>
+      {/* Bulk Actions */}
+      {selectedProblems.length > 0 && (
+        <div className="bulk-actions-toolbar">
+          <span>{selectedProblems.length} problem(s) selected</span>
+          <button className="btn btn-sm btn-danger" onClick={handleBulkDelete}>
+            Delete Selected
+          </button>
+          <button className="btn btn-sm btn-secondary" onClick={() => setSelectedProblems([])}>
+            Clear Selection
+          </button>
+        </div>
+      )}
 
-                <div className="problem-meta">
-                  <span className="score-badge">🏆 {problem.score} pts</span>
-                  <span className="reusable-badge">
-                    {problem.reusableInEvents ? "✅ Reusable" : "🔒 Private"}
-                  </span>
-                </div>
+      {/* Filter Section */}
+      <div className="filter-section">
+        <button
+          className="filter-toggle"
+          onClick={() => setShowFilters(!showFilters)}
+        >
+          🔍 Filters {showFilters ? "▾" : "▸"}
+        </button>
 
-                <div className="problem-testcases">
-                  <span>📋 {problem.sampleTestCases?.length || 0} sample test cases</span>
-                  <span>🔒 {problem.hiddenTestCases?.length || 0} hidden test cases</span>
-                </div>
+        {showFilters && (
+          <div className="filter-panel">
+            <div className="filter-group">
+              <label>Search</label>
+              <input
+                type="text"
+                placeholder="Search problems..."
+                value={filters.searchTerm}
+                onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
+                className="form-input"
+              />
+            </div>
 
-                <div className="problem-actions">
-                  <button
-                    className="btn-action edit"
-                    onClick={() => handleEdit(problem)}
-                    title="Edit this problem"
-                  >
-                    ✏️ Edit
-                  </button>
-                  <button
-                    className="btn-action assign"
-                    onClick={() => navigate(`/superadmin/problems/${problem._id}/assign`)}
-                    title="Assign to events"
-                  >
-                    🎯 Assign
-                  </button>
-                  <button
-                    className="btn-action delete"
-                    onClick={() => setDeleteConfirm(problem._id)}
-                    title="Delete this problem"
-                  >
-                    🗑️ Delete
-                  </button>
-                </div>
-              </div>
-            ))}
+            <div className="filter-group">
+              <label>Difficulty</label>
+              <select
+                value={filters.level}
+                onChange={(e) => setFilters({ ...filters, level: e.target.value })}
+                className="form-input"
+              >
+                <option value="all">All Difficulties</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+
+            <button
+              className="btn btn-secondary"
+              onClick={() => setFilters({ searchTerm: "", level: "all" })}
+            >
+              Reset Filters
+            </button>
           </div>
         )}
       </div>
 
-      {/* Pagination */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={paginatedData.pages}
-        onPageChange={setCurrentPage}
-        itemsPerPage={ITEMS_PER_PAGE}
-        totalItems={sortedProblems.length}
+      {/* Content Area */}
+      <div className="content-area">
+        {filteredData.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">📭</div>
+            <h3>No Problems Found</h3>
+            <p>{activeTab === "all" ? "No reusable problems available" : "You haven't created any problems yet"}</p>
+            <button className="btn btn-primary" onClick={handleCreate}>
+              Create Problem
+            </button>
+          </div>
+        ) : (
+          <>
+            <DataTable
+              columns={columns}
+              data={paginatedData}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+              onSort={handleSort}
+            />
+
+            {/* Pagination */}
+            <div className="pagination-area">
+              <span className="pagination-info">
+                Page {currentPage} of {totalPages} | Showing {paginatedData.length} of {filteredData.length}
+              </span>
+              <div className="pagination-controls">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  ←
+                </button>
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const page = Math.max(1, currentPage - 2) + i;
+                  return page <= totalPages ? (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={currentPage === page ? "active" : ""}
+                    >
+                      {page}
+                    </button>
+                  ) : null;
+                })}
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  →
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Problem Form Modal */}
+      <CreateProblem
+        isOpen={showCreateProblemModal}
+        onClose={() => setShowCreateProblemModal(false)}
+        onSuccess={() => {
+          if (activeTab === "all") {
+            fetchAllProblems();
+          } else {
+            fetchMyProblems();
+          }
+        }}
       />
 
-      {/* Create/Edit Modal */}
-      {showCreateModal && (
-        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>{editingProblem ? "Edit Problem" : "Create New Problem"}</h2>
-              <button
-                className="modal-close"
-                onClick={() => setShowCreateModal(false)}
-              >
-                ✕
-              </button>
+      <UpdateProblem
+        isOpen={showUpdateProblemModal}
+        problem={selectedProblem}
+        onClose={() => setShowUpdateProblemModal(false)}
+        onSuccess={() => {
+          if (activeTab === "all") {
+            fetchAllProblems();
+          } else {
+            fetchMyProblems();
+          }
+        }}
+      />
+
+      {/* Details Modal */}
+      {showDetailsModal && selectedProblem && (
+        <Modal
+          isOpen={showDetailsModal}
+          onClose={() => setShowDetailsModal(false)}
+          title={selectedProblem.title}
+          size="large"
+        >
+          <div className="modal-content details-modal-content">
+            {/* Basic Info */}
+            <div className="details-section">
+              <h3 className="details-section-title">Problem Information</h3>
+              
+              <div className="details-row">
+                <div className="label">Title:</div>
+                <span className="value">{selectedProblem.title || "-"}</span>
+              </div>
+
+              <div className="details-row">
+                <div className="label">Description:</div>
+                <span className="value description-text">{selectedProblem.description || "-"}</span>
+              </div>
+
+              <div className="details-row">
+                <div className="label">Difficulty Level:</div>
+                <span className={`status-badge difficulty-${getLevelColor(selectedProblem.level || "easy")}`}>
+                  {(selectedProblem.level || "easy").toUpperCase()}
+                </span>
+              </div>
+
+              <div className="details-row">
+                <div className="label">Points:</div>
+                <span className="value">{selectedProblem.score || 100}</span>
+              </div>
+
+              <div className="details-row">
+                <div className="label">Total Submissions:</div>
+                <span className="value">{selectedProblem.submissions || 0}</span>
+              </div>
+
+              <div className="details-row">
+                <div className="label">Reusable in Events:</div>
+                <span className="value">
+                  {selectedProblem.reusableInEvents ? (
+                    <span style={{ color: '#16a34a' }}>✓ Yes</span>
+                  ) : (
+                    <span style={{ color: '#dc2626' }}>✗ No</span>
+                  )}
+                </span>
+              </div>
             </div>
 
-            <form onSubmit={handleCreateOrUpdate} className="problem-form">
-              {/* Basic Info */}
-              <div className="form-section">
-                <h3>Problem Details</h3>
-
-                <div className="form-group">
-                  <label htmlFor="name">Problem Name *</label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    placeholder="e.g., Two Sum, Binary Search Tree"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="statement">Problem Statement *</label>
-                  <textarea
-                    id="statement"
-                    name="statement"
-                    value={formData.statement}
-                    onChange={handleInputChange}
-                    placeholder="Detailed problem description..."
-                    rows="6"
-                    required
-                  />
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="level">Difficulty Level *</label>
-                    <select
-                      id="level"
-                      name="level"
-                      value={formData.level}
-                      onChange={handleInputChange}
-                    >
-                      <option value="easy">Easy</option>
-                      <option value="medium">Medium</option>
-                      <option value="hard">Hard</option>
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="score">Points *</label>
-                    <input
-                      type="number"
-                      id="score"
-                      name="score"
-                      value={formData.score}
-                      onChange={handleInputChange}
-                      min="1"
-                      max="1000"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Sample Test Cases */}
-              <div className="form-section">
-                <div className="section-header">
-                  <h3>Sample Test Cases (Visible to Users)</h3>
-                  <button
-                    type="button"
-                    className="btn-small"
-                    onClick={addSampleTestCase}
-                  >
-                    + Add Sample
-                  </button>
-                </div>
-
-                {formData.sampleTestCases.map((testCase, index) => (
-                  <div key={index} className="testcase-block">
-                    <div className="testcase-number">Sample {index + 1}</div>
-
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label>Input</label>
-                        <textarea
-                          value={testCase.input}
-                          onChange={(e) =>
-                            handleSampleTestCaseChange(index, "input", e.target.value)
-                          }
-                          placeholder="Test input"
-                          rows="3"
-                        />
+            {/* Sample Test Cases */}
+            {selectedProblem.sampleTestCases && selectedProblem.sampleTestCases.length > 0 && (
+              <div className="details-section">
+                <h3 className="details-section-title">Sample Test Cases</h3>
+                {selectedProblem.sampleTestCases.map((testCase, index) => (
+                  <div key={index} className="test-case-display">
+                    <div className="test-case-number">Sample #{index + 1}</div>
+                    <div className="test-case-content">
+                      <div className="test-case-item">
+                        <span className="test-case-label">Input:</span>
+                        <pre className="test-case-value">{testCase.input || "-"}</pre>
                       </div>
-
-                      <div className="form-group">
-                        <label>Expected Output</label>
-                        <textarea
-                          value={testCase.output}
-                          onChange={(e) =>
-                            handleSampleTestCaseChange(index, "output", e.target.value)
-                          }
-                          placeholder="Expected output"
-                          rows="3"
-                        />
+                      <div className="test-case-item">
+                        <span className="test-case-label">Output:</span>
+                        <pre className="test-case-value">{testCase.output || "-"}</pre>
                       </div>
+                      {testCase.explanation && (
+                        <div className="test-case-item">
+                          <span className="test-case-label">Explanation:</span>
+                          <p className="test-case-explanation">{testCase.explanation}</p>
+                        </div>
+                      )}
                     </div>
-
-                    <div className="form-group">
-                      <label>Explanation (Optional)</label>
-                      <textarea
-                        value={testCase.explanation}
-                        onChange={(e) =>
-                          handleSampleTestCaseChange(index, "explanation", e.target.value)
-                        }
-                        placeholder="Explain this test case to help users"
-                        rows="2"
-                      />
-                    </div>
-
-                    {formData.sampleTestCases.length > 1 && (
-                      <button
-                        type="button"
-                        className="btn-remove"
-                        onClick={() => removeSampleTestCase(index)}
-                      >
-                        Remove Sample
-                      </button>
-                    )}
                   </div>
                 ))}
               </div>
+            )}
 
-              {/* Hidden Test Cases */}
-              <div className="form-section">
-                <div className="section-header">
-                  <h3>Hidden Test Cases (For Evaluation)</h3>
-                  <button
-                    type="button"
-                    className="btn-small"
-                    onClick={addHiddenTestCase}
-                  >
-                    + Add Hidden
-                  </button>
-                </div>
-
-                {formData.hiddenTestCases.map((testCase, index) => (
-                  <div key={index} className="testcase-block hidden">
-                    <div className="testcase-number">Hidden {index + 1}</div>
-
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label>Input</label>
-                        <textarea
-                          value={testCase.input}
-                          onChange={(e) =>
-                            handleHiddenTestCaseChange(index, "input", e.target.value)
-                          }
-                          placeholder="Test input"
-                          rows="2"
-                        />
+            {/* Hidden Test Cases */}
+            {selectedProblem.hiddenTestCases && selectedProblem.hiddenTestCases.length > 0 && (
+              <div className="details-section">
+                <h3 className="details-section-title">Hidden Test Cases</h3>
+                {selectedProblem.hiddenTestCases.map((testCase, index) => (
+                  <div key={index} className="test-case-display">
+                    <div className="test-case-number">Hidden #{index + 1}</div>
+                    <div className="test-case-content">
+                      <div className="test-case-item">
+                        <span className="test-case-label">Input:</span>
+                        <pre className="test-case-value">{testCase.input || "-"}</pre>
                       </div>
-
-                      <div className="form-group">
-                        <label>Expected Output</label>
-                        <textarea
-                          value={testCase.output}
-                          onChange={(e) =>
-                            handleHiddenTestCaseChange(index, "output", e.target.value)
-                          }
-                          placeholder="Expected output"
-                          rows="2"
-                        />
+                      <div className="test-case-item">
+                        <span className="test-case-label">Output:</span>
+                        <pre className="test-case-value">{testCase.output || "-"}</pre>
                       </div>
                     </div>
-
-                    {formData.hiddenTestCases.length > 1 && (
-                      <button
-                        type="button"
-                        className="btn-remove"
-                        onClick={() => removeHiddenTestCase(index)}
-                      >
-                        Remove Hidden
-                      </button>
-                    )}
                   </div>
                 ))}
               </div>
+            )}
 
-              {/* Form Actions */}
-              <div className="form-actions">
-                <button type="submit" className="btn-submit">
-                  {editingProblem ? "Update Problem" : "Create Problem"}
-                </button>
-                <button
-                  type="button"
-                  className="btn-cancel"
-                  onClick={() => setShowCreateModal(false)}
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
+            <div className="modal-actions">
+              <button className="btn btn-secondary" onClick={() => setShowDetailsModal(false)}>
+                Close
+              </button>
+              <button className="btn btn-primary" onClick={() => {
+                handleEdit(selectedProblem);
+                setShowDetailsModal(false);
+              }}>
+                Edit Problem
+              </button>
+            </div>
           </div>
-        </div>
+        </Modal>
       )}
 
-      {/* Delete Confirmation Modal */}
-      {deleteConfirm && (
-        <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>
-          <div className="modal-content modal-small">
-            <h2>Delete Problem?</h2>
-            <p>
-              Are you sure you want to delete this problem? This action cannot be undone.
-            </p>
-            <div className="modal-actions">
-              <button
-                className="btn-danger"
-                onClick={() => handleDelete(deleteConfirm)}
-              >
-                Yes, Delete
-              </button>
-              <button
-                className="btn-secondary"
-                onClick={() => setDeleteConfirm(null)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Confirm Delete Modal */}
+      {showConfirmDelete && deleteTarget && (
+        <ConfirmDialog
+          isOpen={showConfirmDelete}
+          title="Delete Problem"
+          message={`Are you sure you want to delete "${ deleteTarget.title}"? This action cannot be undone.`}
+          onConfirm={confirmDelete}
+          onCancel={() => setShowConfirmDelete(false)}
+          isDangerous={true}
+        />
       )}
     </div>
   );
 };
 
-export default SuperAdminProblems;
+export default Problems;

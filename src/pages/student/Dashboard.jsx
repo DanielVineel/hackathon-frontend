@@ -1,17 +1,44 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../api/api";
-import "../styles/StudentDashboard.css";
+import { getUserData, getToken } from "../../utils/auth";
+import {
+  StatCard,
+  ProgressCard,
+  ChartCard,
+  ListItemCard,
+  CardGrid,
+  EmptyStateCard,
+  ErrorCard,
+  LoadingCard,
+  ActionCard,
+  Badge
+} from "../../components/DashboardCard";
+import "../../styles/StudentDashboard.css";
 
+/**
+ * Student Dashboard Component
+ * Shows student stats, events, submissions, and certificates
+ */
 const StudentDashboard = () => {
   const navigate = useNavigate();
+  const user = getUserData();
+
+  // Stats State
   const [stats, setStats] = useState({
     registeredEvents: 0,
     problemsSolved: 0,
     certificatesEarned: 0,
     totalSubmissions: 0,
+    acceptanceRate: 0
   });
+
+  // Data State
   const [myEvents, setMyEvents] = useState([]);
+  const [certificates, setCertificates] = useState([]);
+  const [profile, setProfile] = useState(null);
+
+  // UI State
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -19,141 +46,303 @@ const StudentDashboard = () => {
     fetchDashboardData();
   }, []);
 
+  /**
+   * Fetch all dashboard data in parallel
+   */
   const fetchDashboardData = async () => {
     try {
-      const [eventsRes, submissionsRes, certificatesRes] = await Promise.all([
-        API.get("/student/my-events").catch(() => ({ data: { data: [] } })),
-        API.get("/student/my-submissions").catch(() => ({
-          data: { data: [] },
-        })),
-        API.get("/student/certificates").catch(() => ({ data: { data: [] } })),
+      setLoading(true);
+      setError(null);
+
+      const [profileRes, eventsRes, certificatesRes] = await Promise.all([
+        API.get("/student/profile").catch(() => ({ data: null })),
+        API.get("/student/myEvents").catch(() => ({ data: [] })),
+        API.get("/student/certificates").catch(() => ({ data: [] }))
       ]);
 
-      const events = eventsRes.data?.data || [];
-      const submissions = submissionsRes.data?.data || [];
-      const certificates = certificatesRes.data?.data || [];
+      // Get profile
+      if (profileRes.data) {
+        setProfile(profileRes.data);
+      }
+
+      // Get events
+      const events = eventsRes.data || [];
+      setMyEvents(events.slice(0, 5)); // Show first 5 events
+
+      // Get certificates
+      const certs = certificatesRes.data || [];
+      setCertificates(certs);
 
       // Calculate stats
-      const problemsSolved = submissions.filter(
-        (s) => s.status === "accepted"
-      ).length;
+      const acceptedSubmissions = events.reduce((count, event) => {
+        return count + (event.submissions?.filter(s => s.status === "accepted").length || 0);
+      }, 0);
+
+      const totalSubs = events.reduce((count, event) => {
+        return count + (event.submissions?.length || 0);
+      }, 0);
+
+      const acceptanceRate = totalSubs > 0 
+        ? Math.round((acceptedSubmissions / totalSubs) * 100)
+        : 0;
 
       setStats({
         registeredEvents: events.length,
-        problemsSolved,
-        certificatesEarned: certificates.length,
-        totalSubmissions: submissions.length,
+        problemsSolved: acceptedSubmissions,
+        certificatesEarned: certs.length,
+        totalSubmissions: totalSubs,
+        acceptanceRate
       });
-
-      setMyEvents(events.slice(0, 3));
-      setError(null);
     } catch (err) {
       console.error("Dashboard error:", err);
-      setError("Failed to load dashboard");
+      setError(err.message || "Failed to load dashboard");
     } finally {
       setLoading(false);
     }
   };
 
+  /**
+   * Handle event registration
+   */
+  const handleRegisterEvent = async (eventId) => {
+    try {
+      await API.post(`/student/event/register/${eventId}`);
+      // Refresh data
+      fetchDashboardData();
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to register for event");
+    }
+  };
+
+  /**
+   * Handle event start
+   */
+  const handleStartEvent = async (eventId) => {
+    try {
+      await API.post(`/student/event/start/${eventId}`);
+      navigate(`/student/events/${eventId}`);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to start event");
+    }
+  };
+
+  // Loading State
   if (loading) {
-    return <div className="student-dashboard loading">Loading...</div>;
+    return <LoadingCard message="Loading your dashboard..." />;
+  }
+
+  // Error State
+  if (error) {
+    return (
+      <ErrorCard
+        title="Dashboard Error"
+        message={error}
+        onRetry={fetchDashboardData}
+      />
+    );
   }
 
   return (
     <div className="student-dashboard">
+      {/* Header */}
       <div className="dashboard-header">
-        <h1>Student Dashboard</h1>
-        <p>Track your progress and explore coding challenges</p>
-      </div>
-
-      {error && <div className="error-message">{error}</div>}
-
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon">📅</div>
-          <h3>Registered Events</h3>
-          <p className="stat-value">{stats.registeredEvents}</p>
-          <button onClick={() => navigate("/student/events")}>View Events</button>
+        <div className="dashboard-header__content">
+          <h1>Welcome, {user?.firstName}! 👋</h1>
+          <p>Track your progress and explore coding challenges</p>
         </div>
-
-        <div className="stat-card">
-          <div className="stat-icon">✅</div>
-          <h3>Problems Solved</h3>
-          <p className="stat-value">{stats.problemsSolved}</p>
-          <button onClick={() => navigate("/student/submissions")}>
-            My Submissions
-          </button>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-icon">🏆</div>
-          <h3>Certificates</h3>
-          <p className="stat-value">{stats.certificatesEarned}</p>
-          <button onClick={() => navigate("/student/certificates")}>
-            View Certificates
-          </button>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-icon">📝</div>
-          <h3>Total Submissions</h3>
-          <p className="stat-value">{stats.totalSubmissions}</p>
-        </div>
-      </div>
-
-      <div className="quick-actions">
-        <h2>Quick Actions</h2>
         <button
-          className="action-btn"
+          className="btn btn-primary"
           onClick={() => navigate("/student/browse-events")}
         >
           🔍 Browse Events
         </button>
-        <button
-          className="action-btn"
-          onClick={() => navigate("/student/submissions")}
-        >
-          ✅ My Submissions
-        </button>
-        <button
-          className="action-btn"
-          onClick={() => navigate("/student/leaderboard")}
-        >
-          🏆 Global Leaderboard
-        </button>
       </div>
 
-      <div className="recent-section">
-        <h2>My Recent Events</h2>
+      {/* Main Stats */}
+      <CardGrid columns={4}>
+        <StatCard
+          icon="📅"
+          title="Registered Events"
+          value={stats.registeredEvents}
+          color="primary"
+          onClick={() => navigate("/student/events")}
+        />
+        <StatCard
+          icon="✅"
+          title="Problems Solved"
+          value={stats.problemsSolved}
+          color="success"
+        />
+        <StatCard
+          icon="🏆"
+          title="Certificates"
+          value={stats.certificatesEarned}
+          color="warning"
+        />
+        <StatCard
+          icon="📝"
+          title="Total Submissions"
+          value={stats.totalSubmissions}
+          color="info"
+        />
+      </CardGrid>
+
+      {/* Acceptance Rate Progress */}
+      <div className="card">
+        <ProgressCard
+          icon="📊"
+          title="Acceptance Rate"
+          progress={stats.acceptanceRate}
+          color="primary"
+          label={`${stats.acceptanceRate}%`}
+        />
+      </div>
+
+      {/* Quick Actions */}
+      <div className="quick-actions">
+        <h3 style={{ marginBottom: "16px" }}>Quick Actions</h3>
+        <CardGrid columns={3}>
+          <ActionCard
+            icon="🔍"
+            title="Browse Events"
+            description="Explore available events"
+            buttonText="Browse"
+            onAction={() => navigate("/student/browse-events")}
+            variant="primary"
+          />
+          <ActionCard
+            icon="✅"
+            title="My Submissions"
+            description="View your submissions"
+            buttonText="View"
+            onAction={() => navigate("/student/submissions")}
+            variant="info"
+          />
+          <ActionCard
+            icon="🏆"
+            title="Leaderboard"
+            description="Check global rankings"
+            buttonText="View"
+            onAction={() => navigate("/student/leaderboard")}
+            variant="warning"
+          />
+        </CardGrid>
+      </div>
+
+      {/* My Events Section */}
+      <ChartCard
+        title="My Recent Events"
+        subtitle={`${myEvents.length} active events`}
+        action={
+          myEvents.length > 0 ? (
+            <a href="/student/events" className="link">
+              View All →
+            </a>
+          ) : null
+        }
+      >
         {myEvents.length > 0 ? (
           <div className="events-list">
             {myEvents.map((event) => (
-              <div
+              <ListItemCard
                 key={event._id}
-                className="event-item"
+                icon="📅"
+                title={event.name}
+                subtitle={
+                  <>
+                    <span>
+                      {new Date(event.startDate).toLocaleDateString()} -{" "}
+                      {new Date(event.endDate).toLocaleDateString()}
+                    </span>
+                    <br />
+                    <span>{event.problems?.length || 0} problems</span>
+                  </>
+                }
+                action={
+                  <button
+                    className="btn btn-sm btn-primary"
+                    onClick={() => handleStartEvent(event._id)}
+                  >
+                    Start →
+                  </button>
+                }
                 onClick={() => navigate(`/student/events/${event._id}`)}
-              >
-                <h3>{event.name}</h3>
-                <p>{event.description?.substring(0, 80)}...</p>
-                <div className="event-meta">
-                  <span>📅 {new Date(event.startDate).toLocaleDateString()}</span>
-                  <button className="btn-view">View Event →</button>
-                </div>
-              </div>
+              />
             ))}
           </div>
         ) : (
-          <div className="empty">
-            <p>No events registered yet. Browse events to get started!</p>
+          <EmptyStateCard
+            icon="📭"
+            title="No Events Registered"
+            description="Start your journey by registering for an event"
+            actionText="Browse Events"
+            onAction={() => navigate("/student/browse-events")}
+          />
+        )}
+      </ChartCard>
+
+      {/* Certificates Section */}
+      {certificates.length > 0 && (
+        <ChartCard
+          title="My Certificates"
+          subtitle={`${certificates.length} certificates earned`}
+          action={
+            <a href="/student/certificates" className="link">
+              View All →
+            </a>
+          }
+        >
+          <div className="certificates-grid">
+            {certificates.slice(0, 3).map((cert) => (
+              <div key={cert._id} className="certificate-item">
+                <div className="certificate-item__header">
+                  <h4>{cert.name}</h4>
+                  <span className="badge badge--success">✓ Earned</span>
+                </div>
+                <p className="certificate-item__date">
+                  {new Date(cert.earnedDate).toLocaleDateString()}
+                </p>
+                <button
+                  className="btn btn-sm"
+                  onClick={() => navigate(`/student/certificates/${cert._id}`)}
+                >
+                  View Certificate
+                </button>
+              </div>
+            ))}
+          </div>
+        </ChartCard>
+      )}
+
+      {/* Profile Info */}
+      {profile && (
+        <ChartCard title="Profile Info">
+          <div className="profile-info">
+            <div className="profile-info__item">
+              <label>Email</label>
+              <p>{profile.email}</p>
+            </div>
+            <div className="profile-info__item">
+              <label>Phone</label>
+              <p>{profile.phone || "Not provided"}</p>
+            </div>
+            <div className="profile-info__item">
+              <label>Status</label>
+              <p>{profile.status}</p>
+            </div>
+            <div className="profile-info__item">
+              <label>Organization</label>
+              <p>{profile.latestOrganization || "Not provided"}</p>
+            </div>
             <button
-              className="btn-primary"
-              onClick={() => navigate("/student/browse-events")}
+              className="btn btn-primary"
+              onClick={() => navigate("/student/profile")}
             >
-              Browse Events
+              Edit Profile
             </button>
           </div>
-        )}
-      </div>
+        </ChartCard>
+      )}
     </div>
   );
 };

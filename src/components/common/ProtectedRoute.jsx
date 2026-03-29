@@ -1,31 +1,56 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
-import { isAuthenticated, getRole } from "../../utils/auth";
+import { getToken, getRole } from "../../utils/auth.js";
 
-const roleDashboard = {
-  student: "/student/dashboard",
-  manager: "/manager/dashboard",
-  superadmin: "/superadmin/dashboard"
+/**
+ * Simple Private Route (Backward Compatible)
+ * Use this if you prefer the simpler approach
+ * 
+ * Usage:
+ * <PrivateRoute>
+ *   <Dashboard />
+ * </PrivateRoute>
+ */
+const PrivateRoute = ({ children }) => {
+  const token = getToken();
+
+  // If no token, redirect to login
+  // if (!token) {
+  //   return <Navigate to="/" replace />;
+  // }
+
+  return children;
 };
 
-const ProtectedRoute = ({ children, role }) => {
-  // Redirect to /home if not authenticated
-  if (!isAuthenticated()) {
-    return <Navigate to="/home" />;
-  }
-
+/**
+ * Role-Protected Route (Backward Compatible)
+ * Protects a route and checks user role
+ * 
+ * Usage:
+ * <RoleProtectedRoute role="manager">
+ *   <ManagerDashboard />
+ * </RoleProtectedRoute>
+ */
+export const RoleProtectedRoute = ({ children, role = null }) => {
+  const token = getToken();
   const userRole = getRole();
 
-  // Only redirect if role is not found or doesn't match
-  if (!userRole) {
-    return <Navigate to="/home" />;
+  // If no token, redirect to home
+  if (!token) {
+    return <Navigate to="/" replace />;
   }
 
-  if (role && role !== userRole) {
-    return <Navigate to={roleDashboard[userRole]} />;
+  // If role is specified and doesn't match, redirect based on user role
+  if (role && userRole !== role) {
+    const dashboards = {
+      student: "/student/dashboard",
+      manager: "/manager/dashboard",
+      superadmin: "/superadmin/dashboard"
+    };
+    return <Navigate to={dashboards[userRole] || "/"} replace />;
   }
 
   return children;
 };
 
-export default ProtectedRoute;
+export default PrivateRoute;

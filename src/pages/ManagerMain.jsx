@@ -3,13 +3,14 @@ import { Routes, Route } from "react-router-dom";
 import ManagerLayout from "../layouts/ManagerLayout";
 
 import Dashboard from "../pages/manager/Dashboard";
-import Events from "./manager/EventsHistory";
-import CreateEvent from "./manager/CreateEvent";
-import Problems from "./manager/ProblemsHistory";
+import Events from "./manager/Events";
+import Problems from "./manager/Problems";
 import Analytics from "./manager/Analytics";
 import Submissions from "./manager/Submissions";
 import Certificates from "./manager/Certificates";
 import Settings from "./manager/Settings";
+import Leaderboard from "./manager/Leaderboard";
+import Registrations from "./manager/Registrations";
 
 import ProtectedRoute from "../components/common/ProtectedRoute";
 
@@ -32,15 +33,6 @@ const ManagerRoutes = () => {
           element={
             <ProtectedRoute role="manager">
               <Events />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="create-event"
-          element={
-            <ProtectedRoute role="manager">
-              <CreateEvent />
             </ProtectedRoute>
           }
         />
@@ -86,6 +78,24 @@ const ManagerRoutes = () => {
           element={
             <ProtectedRoute role="manager">
               <Settings />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="leaderboard/:eventId"
+          element={
+            <ProtectedRoute role="manager">
+              <Leaderboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="registrations/:eventId"
+          element={
+            <ProtectedRoute role="manager">
+              <Registrations />
             </ProtectedRoute>
           }
         />

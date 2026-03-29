@@ -5,6 +5,7 @@ import { logout } from "../../store/authSlice";
 import { useNavigate } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
 import "./Navbar.css";
+import { FaSignOutAlt, FaUser } from "react-icons/fa";
 
 const Navbar = () => {
   const dispatch = useDispatch();
@@ -22,28 +23,54 @@ const Navbar = () => {
     else navigate("/");
   };
 
-  return (
-    <nav className="navbar navbar-theme" style={{ backgroundColor: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}>
-      <div className="navbar-container px-3 d-flex justify-content-between align-items-center">
-        <span className="navbar-brand fw-bold" style={{ color: 'var(--color-primary)' }}>
-          Hackathon Platform
-        </span>
+  const renderRoleBadge = () => {
+    const roleColors = {
+      student: '#3b82f6',
+      manager: '#8b5cf6',
+      superadmin: '#ef4444'
+    };
 
-        <div className="d-flex align-items-center gap-3">
+    return (
+      <span
+        className="navbar__role-badge"
+        style={{ backgroundColor: roleColors[role] || '#6366f1' }}
+      >
+        {role}
+      </span>
+    );
+  };
+
+  return (
+    <nav className="navbar">
+      <div className="navbar__container">
+        <div className="navbar__left">
+          <h1 className="navbar__brand">SaaS Platform</h1>
+        </div>
+
+        <div className="navbar__right">
           {user && (
-            <span className="text-secondary" style={{ color: 'var(--color-text-secondary)' }}>
-              {user.name || "User"} <span style={{ color: 'var(--color-primary)' }}>({role})</span>
-            </span>
+            <div className="navbar__user-info">
+              <div className="navbar__user-avatar">
+                <FaUser />
+              </div>
+              <div className="navbar__user-details">
+                <p className="navbar__user-name">
+                  {user.firstName} {user.lastName || ""}
+                </p>
+                {renderRoleBadge()}
+              </div>
+            </div>
           )}
 
           <ThemeToggle />
 
-          <button 
-            className="btn btn-outline-danger" 
+          <button
+            className="navbar__logout-btn"
             onClick={handleLogout}
-            style={{ borderColor: 'var(--color-error)', color: 'var(--color-error)' }}
+            title="Logout"
+            aria-label="Logout"
           >
-            Logout
+            <FaSignOutAlt />
           </button>
         </div>
       </div>

@@ -1,54 +1,73 @@
 // src/pages/superadmin/Users.jsx
 import React, { useEffect, useState } from "react";
-import Pagination from "../../components/common/Pagination";
-import { getBlutoStorage, setBlutoStorage } from "../../utils/storage";
-import { paginateArray } from "../../utils/pagination";
+import { useNavigate } from "react-router-dom";
 import API from "../../api/api";
-import { useTheme } from "../../context/ThemeContext";
+import DataTable from "../../components/common/DataTable";
+import Modal from "../../components/common/Modal";
+import ConfirmDialog from "../../components/common/ConfirmDialog";
+import "../../styles/EnhancedPages.css";
 import "./Users.css";
 
 const Users = () => {
-  const { theme } = useTheme();
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState("desc");
+
+  // Filters
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    searchTerm: "",
+    role: "all",
+    status: "all"
+  });
+
+  // Bulk operations
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [showBulkActionMenu, setShowBulkActionMenu] = useState(false);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 12;
+  const ITEMS_PER_PAGE = 10;
 
-  // Filters with bluto namespace
-  const [searchTerm, setSearchTerm] = useState(
-    getBlutoStorage("superadmin-users-search", "")
-  );
-  const [filterRole, setFilterRole] = useState(
-    getBlutoStorage("superadmin-users-role", "all")
-  );
-  const [activeTab, setActiveTab] = useState(
-    getBlutoStorage("superadmin-users-tab", "students")
-  );
+  // Modals
   const [selectedUser, setSelectedUser] = useState(null);
-  const [showUserDetails, setShowUserDetails] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   // Fetch users
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      // Fetch both students and managers
+      setError(null);
       const [studentsRes, managersRes] = await Promise.all([
         API.get("/students"),
         API.get("/managers")
       ]);
-      
+
       const allUsers = [
-        ...(studentsRes.data?.data || []).map(s => ({ ...s, role: "student" })),
-        ...(managersRes.data?.data || []).map(m => ({ ...m, role: "manager" }))
+        ...(studentsRes.data?.data || []).map(s => ({
+          ...s,
+          role: "Student",
+          status: s.status || "active",
+          joinedDate: s.createdAt || new Date().toISOString()
+        })),
+        ...(managersRes.data?.data || []).map(m => ({
+          ...m,
+          role: "Manager",
+          status: m.status || "active",
+          joinedDate: m.createdAt || new Date().toISOString()
+        }))
       ];
-      
+
       setUsers(allUsers);
-      applyFiltersAndSearch(allUsers, searchTerm, filterRole);
+      setCurrentPage(1);
     } catch (err) {
-      console.error("Error fetching users:", err);
+      setError("Failed to load users. Please try again.");
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -58,347 +77,477 @@ const Users = () => {
     fetchUsers();
   }, []);
 
-  // Apply filters and search
-  const applyFiltersAndSearch = (userList, searchValue, role) => {
-    let filtered = userList;
+  // Filtered and sorted data
+  const filteredData = React.useMemo(() => {
+    let filtered = [...users];
 
-    // Search filter
-    if (searchValue.trim()) {
+    // Apply filters
+    if (filters.searchTerm) {
+      const term = filters.searchTerm.toLowerCase();
       filtered = filtered.filter(user =>
-        user.name?.toLowerCase().includes(searchValue.toLowerCase()) ||
-        user.email?.toLowerCase().includes(searchValue.toLowerCase()) ||
-        user.username?.toLowerCase().includes(searchValue.toLowerCase())
+        user.name?.toLowerCase().includes(term) ||
+        user.email?.toLowerCase().includes(term) ||
+        user.phone?.includes(term)
       );
     }
 
-    // Role filter
-    if (role !== "all") {
-      filtered = filtered.filter(user => user.role === role);
+    if (filters.role !== "all") {
+      filtered = filtered.filter(user => user.role === filters.role);
     }
 
-    setFilteredUsers(filtered);
-  };
-
-  // Handle search
-  const handleSearch = (value) => {
-    setSearchTerm(value);
-    setBlutoStorage("superadmin-users-search", value);
-    applyFiltersAndSearch(users, value, filterRole);
-    setCurrentPage(1);
-  };
-
-  // Handle filter
-  const handleFilter = (role) => {
-    setFilterRole(role);
-    setBlutoStorage("superadmin-users-role", role);
-    applyFiltersAndSearch(users, searchTerm, role);
-    setCurrentPage(1);
-  };
-
-  // Handle tab switch
-  const handleTabSwitch = (tab) => {
-    setActiveTab(tab);
-    setBlutoStorage("superadmin-users-tab", tab);
-    if (tab === "students") {
-      handleFilter("student");
-    } else if (tab === "managers") {
-      handleFilter("manager");
-    } else {
-      handleFilter("all");
+    if (filters.status !== "all") {
+      filtered = filtered.filter(user => user.status === filters.status);
     }
-  };
 
-  const paginatedData = paginateArray(
-    filteredUsers,
-    currentPage,
-    ITEMS_PER_PAGE
+    // Sort
+    filtered.sort((a, b) => {
+      let aVal = a[sortBy];
+      let bVal = b[sortBy];
+
+      if (aVal < bVal) return sortOrder === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return filtered;
+  }, [users, filters, sortBy, sortOrder]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
   );
 
-  // Delete user
-  const handleDeleteUser = async (userId) => {
-    if (!window.confirm("Are you sure you want to delete this user?")) return;
-    
+  // Stats
+  const stats = React.useMemo(() => ({
+    total: users.length,
+    students: users.filter(u => u.role === "Student").length,
+    managers: users.filter(u => u.role === "Manager").length,
+    active: users.filter(u => u.status === "active").length
+  }), [users]);
+
+  // Handlers
+  const handleSort = (key) => {
+    if (sortBy === key) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(key);
+      setSortOrder("asc");
+    }
+  };
+
+  const handleSelectUser = (userId) => {
+    setSelectedUsers(prev =>
+      prev.includes(userId)
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedUsers(paginatedData.map(u => u._id));
+    } else {
+      setSelectedUsers([]);
+    }
+  };
+
+  const handleView = (user) => {
+    setSelectedUser(user);
+    setShowDetailsModal(true);
+  };
+
+  const handleEdit = (user) => {
+    navigate(`/superadmin/users/edit/${user._id}`);
+  };
+
+  const handleDelete = (user) => {
+    setDeleteTarget(user);
+    setShowConfirmDelete(true);
+  };
+
+  const confirmDelete = async () => {
     try {
-      const endpoint = selectedUser.role === "student" ? "/students" : "/managers";
-      await API.delete(`${endpoint}/${userId}`);
-      alert("User deleted successfully!");
-      setShowUserDetails(false);
-      fetchUsers();
+      await API.delete(`/${deleteTarget.role.toLowerCase()}s/${deleteTarget._id}`);
+      setUsers(users.filter(u => u._id !== deleteTarget._id));
+      setShowConfirmDelete(false);
+      setDeleteTarget(null);
     } catch (err) {
-      console.error("Error deleting user:", err);
-      alert(err.response?.data?.message || "Error deleting user");
+      setError("Failed to delete user. Please try again.");
     }
   };
 
-  // Deactivate user
-  const handleDeactivateUser = async (userId) => {
-    if (!window.confirm("Are you sure you want to deactivate this user?")) return;
-    
+  const handleBulkStatusChange = async (newStatus) => {
     try {
-      const endpoint = selectedUser.role === "student" ? "/students" : "/managers";
-      await API.put(`${endpoint}/${userId}`, { status: "inactive" });
-      alert("User deactivated successfully!");
-      setShowUserDetails(false);
-      fetchUsers();
+      await Promise.all(
+        selectedUsers.map(userId => {
+          const user = users.find(u => u._id === userId);
+          return API.put(`/${user.role.toLowerCase()}s/${userId}`, { status: newStatus });
+        })
+      );
+      
+      setUsers(users.map(u =>
+        selectedUsers.includes(u._id) ? { ...u, status: newStatus } : u
+      ));
+      setSelectedUsers([]);
+      setShowBulkActionMenu(false);
     } catch (err) {
-      console.error("Error deactivating user:", err);
-      alert(err.response?.data?.message || "Error deactivating user");
+      setError("Failed to update users. Please try again.");
     }
   };
 
-  // Format date
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit"
-    });
-  };
+  const handleBulkDelete = async () => {
+    try {
+      await Promise.all(
+        selectedUsers.map(userId => {
+          const user = users.find(u => u._id === userId);
+          return API.delete(`/${user.role.toLowerCase()}s/${userId}`);
+        })
+      );
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "active":
-        return "status-active";
-      case "inactive":
-        return "status-inactive";
-      default:
-        return "status-pending";
+      setUsers(users.filter(u => !selectedUsers.includes(u._id)));
+      setSelectedUsers([]);
+      setShowBulkActionMenu(false);
+    } catch (err) {
+      setError("Failed to delete users. Please try again.");
     }
   };
+
+  // Table columns
+  const columns = [
+    {
+      key: "checkbox",
+      header: (
+        <input
+          type="checkbox"
+          onChange={handleSelectAll}
+          checked={selectedUsers.length === paginatedData.length && paginatedData.length > 0}
+        />
+      ),
+      render: (_, row) => (
+        <input
+          type="checkbox"
+          checked={selectedUsers.includes(row._id)}
+          onChange={() => handleSelectUser(row._id)}
+        />
+      ),
+      width: "50px"
+    },
+    {
+      key: "name",
+      header: "Name",
+      render: (value, row) => (
+        <div>
+          <strong>{row.name}</strong>
+          <br />
+          <small style={{ color: "#6b7280" }}>{row.email}</small>
+        </div>
+      ),
+      sortable: true
+    },
+    {
+      key: "phone",
+      header: "Phone",
+      render: (value) => value || "N/A",
+      sortable: true
+    },
+    {
+      key: "role",
+      header: "Role",
+      render: (value) => (
+        <span className={`status-badge ${value === "Student" ? "role-student" : "role-manager"}`}>
+          {value}
+        </span>
+      ),
+      sortable: true
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (value) => (
+        <span className={`status-badge status-${value}`}>
+          {value === "active" ? "Active" : "Inactive"}
+        </span>
+      ),
+      sortable: true
+    },
+    {
+      key: "joinedDate",
+      header: "Joined",
+      render: (value) => new Date(value).toLocaleDateString(),
+      sortable: true
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      render: (_, row) => (
+        <div className="action-buttons compact">
+          <button className="btn btn-sm btn-primary" onClick={() => handleView(row)} title="View Details">
+            👁️
+          </button>
+          <button className="btn btn-sm btn-secondary" onClick={() => handleEdit(row)} title="Edit">
+            ✏️
+          </button>
+          <button className="btn btn-sm btn-danger" onClick={() => handleDelete(row)} title="Delete">
+            🗑️
+          </button>
+        </div>
+      )
+    }
+  ];
 
   return (
-    <div className={`users-page theme-${theme}`}>
-      <div className="users-header">
-        <h2>User Management</h2>
-        <div className="header-stats">
-          <div className="stat-card">
-            <span className="stat-label">Total Users</span>
-            <span className="stat-value">{users.length}</span>
-          </div>
-          <div className="stat-card">
-            <span className="stat-label">Students</span>
-            <span className="stat-value">{users.filter(u => u.role === "student").length}</span>
-          </div>
-          <div className="stat-card">
-            <span className="stat-label">Managers</span>
-            <span className="stat-value">{users.filter(u => u.role === "manager").length}</span>
-          </div>
+    <div className="enhanced-page Users">
+      {/* Page Header */}
+      <div className="page-header">
+        <div className="header-content">
+          <h1>👥 Users Management</h1>
+          <p>Manage all system users and their roles</p>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="users-tabs">
-        <button
-          className={`tab ${activeTab === "students" ? "active" : ""}`}
-          onClick={() => handleTabSwitch("students")}
-        >
-          Students
-        </button>
-        <button
-          className={`tab ${activeTab === "managers" ? "active" : ""}`}
-          onClick={() => handleTabSwitch("managers")}
-        >
-          Managers
-        </button>
-        <button
-          className={`tab ${activeTab === "all" ? "active" : ""}`}
-          onClick={() => handleTabSwitch("all")}
-        >
-          All Users
-        </button>
-      </div>
-
-      {/* Search Bar */}
-      <div className="search-box">
-        <input
-          type="text"
-          placeholder="Search by name, email, or username..."
-          value={searchTerm}
-          onChange={(e) => handleSearch(e.target.value)}
-          className="search-input"
-        />
-      </div>
-
-      {/* Users Table */}
-      {paginatedData.data.length === 0 ? (
-        <div className="no-users">
-          <p>No users found</p>
+      {/* Stats Bar */}
+      <div className="stats-bar">
+        <div className="stat-card">
+          <span className="stat-value">{stats.total}</span>
+          <span className="stat-label">Total Users</span>
         </div>
-      ) : (
-        <>
-          <div className="users-table-container">
-            <table className="users-table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Status</th>
-                  <th>Joined</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedData.data.map((user, index) => (
-                  <tr key={user._id} className="user-row">
-                    <td>{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</td>
-                    <td>{user.name || "N/A"}</td>
-                    <td>{user.email}</td>
-                    <td>
-                      <span className={`role-badge role-${user.role}`}>
-                        {user.role?.toUpperCase()}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={`status-badge ${getStatusColor(user.status)}`}>
-                        {user.status || "ACTIVE"}
-                      </span>
-                    </td>
-                    <td>{formatDate(user.createdAt)}</td>
-                    <td>
-                      <button
-                        className="action-btn view-btn"
-                        onClick={() => {
-                          setSelectedUser(user);
-                          setShowUserDetails(true);
-                        }}
-                      >
-                        View
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div className="stat-card">
+          <span className="stat-value">{stats.students}</span>
+          <span className="stat-label">Students</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-value">{stats.managers}</span>
+          <span className="stat-label">Managers</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-value">{stats.active}</span>
+          <span className="stat-label">Active Users</span>
+        </div>
+      </div>
 
-          <Pagination
-            currentPage={currentPage}
-            totalPages={paginatedData.pages}
-            onPageChange={setCurrentPage}
-            itemsPerPage={ITEMS_PER_PAGE}
-            totalItems={filteredUsers.length}
-          />
-        </>
+      {/* Error Message */}
+      {error && <div className="error-message">{error}</div>}
+
+      {/* Bulk Actions */}
+      {selectedUsers.length > 0 && (
+        <div className="bulk-actions">
+          <span>{selectedUsers.length} selected</span>
+          <button
+            className="btn btn-sm btn-success"
+            onClick={() => handleBulkStatusChange("active")}
+          >
+            ✓ Activate
+          </button>
+          <button
+            className="btn btn-sm btn-warning"
+            onClick={() => handleBulkStatusChange("inactive")}
+          >
+            ⊘ Deactivate
+          </button>
+          <button
+            className="btn btn-sm btn-danger"
+            onClick={handleBulkDelete}
+          >
+            🗑️ Delete Selected
+          </button>
+          <button
+            className="btn btn-sm btn-outline"
+            onClick={() => setSelectedUsers([])}
+          >
+            Clear Selection
+          </button>
+        </div>
       )}
 
-      {/* User Details Modal */}
-      {showUserDetails && selectedUser && (
-        <div className="user-details-modal" onClick={() => setShowUserDetails(false)}>
-          <div className="user-details-content" onClick={e => e.stopPropagation()}>
-            <button className="close-btn" onClick={() => setShowUserDetails(false)}>✕</button>
+      {/* Filters */}
+      <div className="filter-section">
+        <button
+          className={`btn btn-outline ${showFilters ? "active" : ""}`}
+          onClick={() => setShowFilters(!showFilters)}
+        >
+          {showFilters ? "Hide Filters" : "Show Filters"}
+        </button>
 
-            <div className="user-detail-header">
-              <div className="user-avatar">
-                {selectedUser.name?.charAt(0)?.toUpperCase() || "U"}
+        {showFilters && (
+          <div className="filter-panel">
+            <div className="filter-row">
+              <div className="filter-group">
+                <label>Search by Name, Email or Phone</label>
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={filters.searchTerm}
+                  onChange={(e) => {
+                    setFilters({ ...filters, searchTerm: e.target.value });
+                    setCurrentPage(1);
+                  }}
+                />
               </div>
-              <div className="user-header-info">
-                <h2>{selectedUser.name || "N/A"}</h2>
-                <p className="user-email">{selectedUser.email}</p>
-                <div className="user-badges">
-                  <span className={`role-badge role-${selectedUser.role}`}>
-                    {selectedUser.role?.toUpperCase()}
-                  </span>
-                  <span className={`status-badge ${getStatusColor(selectedUser.status)}`}>
-                    {selectedUser.status || "ACTIVE"}
-                  </span>
-                </div>
+              <div className="filter-group">
+                <label>Role</label>
+                <select
+                  value={filters.role}
+                  onChange={(e) => {
+                    setFilters({ ...filters, role: e.target.value });
+                    setCurrentPage(1);
+                  }}
+                >
+                  <option value="all">All Roles</option>
+                  <option value="Student">Students</option>
+                  <option value="Manager">Managers</option>
+                </select>
               </div>
-            </div>
-
-            <div className="user-detail-sections">
-              <div className="detail-section">
-                <h3>Basic Information</h3>
-                <div className="detail-row">
-                  <label>Name:</label>
-                  <value>{selectedUser.name || "N/A"}</value>
-                </div>
-                <div className="detail-row">
-                  <label>Email:</label>
-                  <value>{selectedUser.email}</value>
-                </div>
-                <div className="detail-row">
-                  <label>Username:</label>
-                  <value>{selectedUser.username || "N/A"}</value>
-                </div>
-                <div className="detail-row">
-                  <label>Phone:</label>
-                  <value>{selectedUser.phone || "N/A"}</value>
-                </div>
+              <div className="filter-group">
+                <label>Status</label>
+                <select
+                  value={filters.status}
+                  onChange={(e) => {
+                    setFilters({ ...filters, status: e.target.value });
+                    setCurrentPage(1);
+                  }}
+                >
+                  <option value="all">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
               </div>
-
-              <div className="detail-section">
-                <h3>Account Information</h3>
-                <div className="detail-row">
-                  <label>Role:</label>
-                  <value>{selectedUser.role?.toUpperCase()}</value>
-                </div>
-                <div className="detail-row">
-                  <label>Status:</label>
-                  <value>{selectedUser.status || "ACTIVE"}</value>
-                </div>
-                <div className="detail-row">
-                  <label>Joined:</label>
-                  <value>{formatDate(selectedUser.createdAt)}</value>
-                </div>
-                <div className="detail-row">
-                  <label>Last Updated:</label>
-                  <value>{formatDate(selectedUser.updatedAt)}</value>
-                </div>
-              </div>
-
-              {selectedUser.role === "student" && (
-                <div className="detail-section">
-                  <h3>Student Information</h3>
-                  <div className="detail-row">
-                    <label>School/College:</label>
-                    <value>{selectedUser.schoolCollege || "N/A"}</value>
-                  </div>
-                  <div className="detail-row">
-                    <label>Grade/Year:</label>
-                    <value>{selectedUser.gradeYear || "N/A"}</value>
-                  </div>
-                  <div className="detail-row">
-                    <label>Events Participated:</label>
-                    <value>{selectedUser.eventsParticipated?.length || 0}</value>
-                  </div>
-                </div>
-              )}
-
-              {selectedUser.role === "manager" && (
-                <div className="detail-section">
-                  <h3>Manager Information</h3>
-                  <div className="detail-row">
-                    <label>Organization:</label>
-                    <value>{selectedUser.organization || "N/A"}</value>
-                  </div>
-                  <div className="detail-row">
-                    <label>Events Managed:</label>
-                    <value>{selectedUser.managedEvents?.length || 0}</value>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="detail-actions">
-              <button className="btn-edit">Edit User</button>
-              <button className="btn-deactivate" onClick={() => handleDeactivateUser(selectedUser._id)}>
-                Deactivate
+              <button
+                className="btn btn-secondary"
+                onClick={() => {
+                  setFilters({ searchTerm: "", role: "all", status: "all" });
+                  setCurrentPage(1);
+                }}
+              >
+                Reset
               </button>
-              <button className="btn-delete" onClick={() => handleDeleteUser(selectedUser._id)}>
-                Delete User
-              </button>
-              <button className="btn-close" onClick={() => setShowUserDetails(false)}>Close</button>
             </div>
           </div>
-        </div>
+        )}
+      </div>
+
+      {/* Content Area */}
+      <div className="content-area">
+        {loading ? (
+          <div className="loading">Loading users...</div>
+        ) : filteredData.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">📭</div>
+            <h3>No users found</h3>
+            <p>Try adjusting your filters or search terms</p>
+          </div>
+        ) : (
+          <>
+            <DataTable
+              columns={columns}
+              data={paginatedData}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+              onSort={handleSort}
+            />
+
+            {/* Pagination */}
+            <div className="pagination-area">
+              <span className="pagination-info">
+                Page {currentPage} of {totalPages} | Showing {paginatedData.length} of {filteredData.length}
+              </span>
+              <div className="pagination-controls">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  ←
+                </button>
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const page = Math.max(1, currentPage - 2) + i;
+                  return page <= totalPages ? (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={currentPage === page ? "active" : ""}
+                    >
+                      {page}
+                    </button>
+                  ) : null;
+                })}
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  →
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Details Modal */}
+      {showDetailsModal && selectedUser && (
+        <Modal
+          isOpen={showDetailsModal}
+          onClose={() => setShowDetailsModal(false)}
+          title={`User Details: ${selectedUser.name}`}
+        >
+          <div className="modal-content">
+            <div className="details-row">
+              <div className="label">Name:</div>
+              <span>{selectedUser.name}</span>
+            </div>
+            <div className="details-row">
+              <div className="label">Email:</div>
+              <span>{selectedUser.email}</span>
+            </div>
+            <div className="details-row">
+              <div className="label">Phone:</div>
+              <span>{selectedUser.phone || "N/A"}</span>
+            </div>
+            <div className="details-row">
+              <div className="label">Role:</div>
+              <span className={`status-badge ${selectedUser.role === "Student" ? "role-student" : "role-manager"}`}>
+                {selectedUser.role}
+              </span>
+            </div>
+            <div className="details-row">
+              <div className="label">Status:</div>
+              <span className={`status-badge status-${selectedUser.status}`}>
+                {selectedUser.status === "active" ? "Active" : "Inactive"}
+              </span>
+            </div>
+            <div className="details-row">
+              <div className="label">Joined:</div>
+              <span>{new Date(selectedUser.joinedDate).toLocaleString()}</span>
+            </div>
+            <div className="modal-actions">
+              <button className="btn btn-secondary" onClick={() => setShowDetailsModal(false)}>
+                Close
+              </button>
+              <button className="btn btn-primary" onClick={() => {
+                handleEdit(selectedUser);
+                setShowDetailsModal(false);
+              }}>
+                Edit User
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Confirm Delete Modal */}
+      {showConfirmDelete && deleteTarget && (
+        <ConfirmDialog
+          isOpen={showConfirmDelete}
+          title="Delete User"
+          message={`Are you sure you want to delete ${deleteTarget.name}? This action cannot be undone.`}
+          onConfirm={confirmDelete}
+          onCancel={() => setShowConfirmDelete(false)}
+          isDangerous={true}
+        />
       )}
     </div>
   );
 };
 
 export default Users;
+   

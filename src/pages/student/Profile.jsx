@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import API from "../../api/api";
-import { getCurrentAuth, saveAuth } from "../../utils/blutoAuth";
-import "../styles/StudentProfile.css";
+import { getCurrentAuth, saveAuth } from "../../utils/blutoAuth.js";
 
 const StudentProfile = () => {
   const { user } = getCurrentAuth();

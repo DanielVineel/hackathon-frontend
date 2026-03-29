@@ -1,55 +1,142 @@
 import { useEffect, useState } from "react";
-import API from "../../services/api";
+import API from "../../api/api";
 import { getToken } from "../../utils/auth";
+import "../../styles/Problems.css";
 
 const Problems = () => {
   const [problems, setProblems] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [difficulty, setDifficulty] = useState("all");
   const token = getToken();
 
-  const fetchProblems = async (diff) => {
-    const data={"level":difficulty}
+  const fetchProblems = async (level) => {
     try {
-     const res= await API.getProblems(data)
+      setLoading(true);
+      setError(null);
 
-      setProblems(res.data);
+      // Build query params
+      const params = level !== "all" ? { level } : {};
+
+      const res = await API.get("/problems", { params });
+
+      // Handle different response structures
+      let problemsData = [];
+      if (res?.data) {
+        if (Array.isArray(res.data)) {
+          problemsData = res.data;
+        } else if (Array.isArray(res.data.data)) {
+          problemsData = res.data.data;
+        } else if (Array.isArray(res.data.problems)) {
+          problemsData = res.data.problems;
+        }
+      }
+
+      setProblems(Array.isArray(problemsData) ? problemsData : []);
     } catch (err) {
-      console.log(err);
+      console.error("Error fetching problems:", err);
+      const errorMsg = err.response?.data?.message || "Failed to load problems";
+      setError(errorMsg);
+      setProblems([]);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchProblems(difficulty);
+    if (token) {
+      fetchProblems(difficulty);
+    }
   }, [difficulty, token]);
 
-  return (
-    <div>
-      <h2>Problems</h2>
+  const handleDifficultyChange = (level) => {
+    setDifficulty(level);
+  };
 
-      {/* Filters */}
-      <div style={{ display: "flex", gap: "10px" }}>
-        <button onClick={() => setDifficulty("all")}>All</button>
-        <button onClick={() => setDifficulty("easy")}>Easy</button>
-        <button onClick={() => setDifficulty("medium")}>Medium</button>
-        <button onClick={() => setDifficulty("hard")}>Hard</button>
+  return (
+    <div className="problems-container">
+      <div className="problems-header">
+        <h2>Problems</h2>
+      </div>
+
+      {/* Difficulty Filters */}
+      <div className="problems-filters">
+        <button
+          className={`filter-btn ${difficulty === "all" ? "active" : ""}`}
+          onClick={() => handleDifficultyChange("all")}
+        >
+          All
+        </button>
+        <button
+          className={`filter-btn ${difficulty === "easy" ? "active" : ""}`}
+          onClick={() => handleDifficultyChange("easy")}
+        >
+          Easy
+        </button>
+        <button
+          className={`filter-btn ${difficulty === "medium" ? "active" : ""}`}
+          onClick={() => handleDifficultyChange("medium")}
+        >
+          Medium
+        </button>
+        <button
+          className={`filter-btn ${difficulty === "hard" ? "active" : ""}`}
+          onClick={() => handleDifficultyChange("hard")}
+        >
+          Hard
+        </button>
       </div>
 
       <hr />
 
-      {/* Problems List */}
-      <div>
-        {problems.length === 0 && <p>No problems found</p>}
+      {/* Loading State */}
+      {loading && <p className="loading-text">Loading problems...</p>}
 
-        {problems.map((problem) => (
-          <div
-            key={problem._id}
-            style={{ border: "1px solid #ddd", padding: "10px", margin: "10px 0" }}
-          >
-            <h3>{problem.title}</h3>
-            <p>Difficulty: {problem.difficulty}</p>
-          </div>
-        ))}
-      </div>
+      {/* Error State */}
+      {error && (
+        <div className="error-message">
+          <p>{error}</p>
+          <button onClick={() => fetchProblems(difficulty)}>Try Again</button>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!loading && problems.length === 0 && !error && (
+        <p className="empty-text">No problems found</p>
+      )}
+
+      {/* Problems List */}
+      {!loading && problems.length > 0 && (
+        <div className="problems-list">
+          {problems.map((problem) => (
+            <div key={problem._id} className="problem-card">
+              <div className="problem-header">
+                <h3 className="problem-title">
+                  {problem.name || problem.title}
+                </h3>
+                <span className={`difficulty-badge difficulty-${problem.level || problem.difficulty}`}>
+                  {problem.level || problem.difficulty}
+                </span>
+              </div>
+
+              {problem.statement && (
+                <p className="problem-statement">
+                  {problem.statement.substring(0, 150)}...
+                </p>
+              )}
+
+              <div className="problem-meta">
+                {problem.score && (
+                  <span className="score">⭐ {problem.score} points</span>
+                )}
+               
+              </div>
+
+             
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

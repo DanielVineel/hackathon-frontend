@@ -1,278 +1,534 @@
-import React, { useState, useEffect } from "react";
+// src/pages/manager/Events.jsx
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Pagination from "../../components/common/Pagination";
-import FilterPanel from "../../components/common/FilterPanel";
-import { getBlutoStorage, setBlutoStorage } from "../../utils/storage";
-import { applyFilters } from "../../utils/filters";
-import { paginateArray } from "../../utils/pagination";
 import API from "../../api/api";
-import "../styles/ManagerEvents.css";
+import DataTable from "../../components/common/DataTable";
+import ConfirmDialog from "../../components/common/ConfirmDialog";
+import { CreateEvent, UpdateEvent } from "./operations";
+import "../../styles/EnhancedPages.css";
+import "./Events.css";
 
-const ManagerEvents = () => {
+const Events = () => {
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [problems, setProblems] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [sortBy, setSortBy] = useState("startDate");
+  const [sortOrder, setSortOrder] = useState("asc");
+
+  // Filters
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    searchTerm: "",
+    status: "all",
+    dateRange: "all"
+  });
+
+  // Bulk operations
+  const [selectedEvents, setSelectedEvents] = useState([]);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 6;
+  const ITEMS_PER_PAGE = 10;
 
-  // Filters with bluto namespace
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [activeFilters, setActiveFilters] = useState(
-    getBlutoStorage("manager-events-filters", {})
-  );
-  const [searchTerm, setSearchTerm] = useState(
-    getBlutoStorage("manager-events-search", "")
-  );
-  const [sortBy, setSortBy] = useState(
-    getBlutoStorage("manager-events-sort", "createdAt")
-  );
-  const [sortOrder, setSortOrder] = useState(
-    getBlutoStorage("manager-events-sort-order", "desc")
-  );
+  // Modals
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showCreateEventModal, setShowCreateEventModal] = useState(false);
+  const [showUpdateEventModal, setShowUpdateEventModal] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
-  useEffect(() => {
-    fetchEvents();
-  }, []);
 
+
+  // Fetch events and problems
   const fetchEvents = async () => {
     try {
       setLoading(true);
-      const res = await API.get("/manager/events/created");
-      setEvents(res.data?.data || []);
       setError(null);
+      const response = await API.get("/manager/events");
+      setEvents(response.data?.data || []);
+      setCurrentPage(1);
     } catch (err) {
-      console.error("Error fetching events:", err);
-      setError("Failed to load events");
-      setEvents([]);
+      setError("Failed to load events. Please try again.");
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredEvents = applyFilters(events, {
-    searchTerm,
-    searchFields: ["name", "description"],
-    filters: activeFilters,
-    sortBy,
-    sortOrder,
-  });
-
-  const paginatedData = paginateArray(
-    filteredEvents,
-    currentPage,
-    ITEMS_PER_PAGE
-  );
-
-  const handleFilterChange = (filters) => {
-    setBlutoStorage("manager-events-filters", filters);
-    setActiveFilters(filters);
-    setCurrentPage(1);
-  };
-
-  const handleClearFilters = () => {
-    setBlutoStorage("manager-events-filters", {});
-    setBlutoStorage("manager-events-search", "");
-    setActiveFilters({});
-    setSearchTerm("");
-    setCurrentPage(1);
-  };
-
-  const handleSearchChange = (e) => {
-    const term = e.target.value;
-    setSearchTerm(term);
-    setBlutoStorage("manager-events-search", term);
-    setCurrentPage(1);
-  };
-
-  const handleSortChange = (field, order) => {
-    setSortBy(field);
-    setSortOrder(order);
-    setBlutoStorage("manager-events-sort", field);
-    setBlutoStorage("manager-events-sort-order", order);
-    setCurrentPage(1);
-  };
-
-  const handleDeleteEvent = async (eventId) => {
-    if (window.confirm("Are you sure you want to delete this event?")) {
-      try {
-        await API.delete(`/manager/event/${eventId}`);
-        fetchEvents();
-        alert("Event deleted successfully");
-      } catch (err) {
-        alert("Error deleting event");
-      }
+  const fetchProblems = async () => {
+    try {
+      const response = await API.get("/problems");
+      // Filter problems: only manager's problems + reusableInEvent problems
+      const allProblems = response.data?.data || [];
+      setProblems(allProblems);
+    } catch (err) {
+      console.error("Failed to fetch problems:", err);
     }
   };
 
-  const filterConfig = [
-    {
-      key: "status",
-      type: "multiselect",
-      label: "Event Status",
-      options: [
-        { value: "upcoming", label: "Upcoming" },
-        { value: "ongoing", label: "Ongoing" },
-        { value: "completed", label: "Completed" },
-      ],
-    },
-  ];
+  useEffect(() => {
+    fetchEvents();
+    fetchProblems();
+  }, []);
 
-  const getStatusBadge = (status) => {
-    const statusClass = `status-${status}`;
-    return <span className={`status-badge ${statusClass}`}>{status}</span>;
+  // Filtered and sorted data
+  const filteredData = React.useMemo(() => {
+    let filtered = [...events];
+
+    if (filters.searchTerm) {
+      const term = filters.searchTerm.toLowerCase();
+      filtered = filtered.filter(event =>
+        event.title?.toLowerCase().includes(term) ||
+        event.description?.toLowerCase().includes(term)
+      );
+    }
+
+    if (filters.status !== "all") {
+      filtered = filtered.filter(event => {
+        const now = new Date();
+        const start = new Date(event.startDate);
+        const end = new Date(event.endDate);
+
+        if (filters.status === "upcoming") return start > now;
+        if (filters.status === "ongoing") return start <= now && end >= now;
+        if (filters.status === "completed") return end < now;
+        return true;
+      });
+    }
+
+    filtered.sort((a, b) => {
+      let aVal = a[sortBy];
+      let bVal = b[sortBy];
+
+      if (aVal < bVal) return sortOrder === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return filtered;
+  }, [events, filters, sortBy, sortOrder]);
+
+  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Stats
+  const stats = React.useMemo(() => {
+    const now = new Date();
+    return {
+      total: events.length,
+      upcoming: events.filter(e => new Date(e.startDate) > now).length,
+      ongoing: events.filter(e => {
+        const start = new Date(e.startDate);
+        const end = new Date(e.endDate);
+        return start <= now && end >= now;
+      }).length,
+      completed: events.filter(e => new Date(e.endDate) < now).length
+    };
+  }, [events]);
+
+  // Handlers
+  const handleSort = (key) => {
+    if (sortBy === key) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(key);
+      setSortOrder("asc");
+    }
   };
 
-  if (loading) {
-    return (
-      <div className="manager-events">
-        <div className="loading">Loading events...</div>
-      </div>
+  const handleSelectEvent = (eventId) => {
+    setSelectedEvents(prev =>
+      prev.includes(eventId)
+        ? prev.filter(id => id !== eventId)
+        : [...prev, eventId]
     );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedEvents.length === paginatedData.length) {
+      setSelectedEvents([]);
+    } else {
+      setSelectedEvents(paginatedData.map(e => e._id));
+    }
+  };
+
+  const handleCreate = () => {
+    setSelectedEvent(null);
+    setShowCreateEventModal(true);
+  };
+
+  const handleEdit = (event) => {
+    setSelectedEvent(event);
+    setShowUpdateEventModal(true);
+  };
+
+  const handleDelete = (event) => {
+    setDeleteTarget(event);
+    setShowConfirmDelete(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      setLoading(true);
+      await API.delete(`/manager/event/${deleteTarget._id}`);
+      setShowConfirmDelete(false);
+      alert("Event deleted successfully!");
+      fetchEvents();
+    } catch (err) {
+      alert("Error deleting event: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
+  const getEventStatus = (startDate, endDate) => {
+    const now = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (start > now) return "Upcoming";
+    if (start <= now && end >= now) return "Ongoing";
+    return "Completed";
+  };
+
+  // DataTable columns
+  const columns = [
+    {
+      key: "checkbox",
+      header: (
+        <input
+          type="checkbox"
+          checked={selectedEvents.length === paginatedData.length && paginatedData.length > 0}
+          onChange={handleSelectAll}
+        />
+      ),
+      render: (row) => (
+        <input
+          type="checkbox"
+          checked={selectedEvents.includes(row._id)}
+          onChange={() => handleSelectEvent(row._id)}
+        />
+      ),
+      width: "50px"
+    },
+    {
+      key: "title",
+      header: "Event Title",
+      sortable: true,
+      render: (row) => (
+        <div>
+          <div className="font-bold">{row.title}</div>
+          <div className="text-sm text-gray-500">{row.description?.substring(0, 40)}...</div>
+        </div>
+      )
+    },
+    {
+      key: "startDate",
+      header: "Start Date",
+      sortable: true,
+      render: (row) => new Date(row.startDate).toLocaleDateString()
+    },
+    {
+      key: "endDate",
+      header: "End Date",
+      sortable: true,
+      render: (row) => new Date(row.endDate).toLocaleDateString()
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (row) => {
+        const status = getEventStatus(row.startDate, row.endDate);
+        const statusClass = status === "Upcoming" ? "upcoming" : status === "Ongoing" ? "ongoing" : "completed";
+        return <span className={`status-badge status-${statusClass}`}>{status}</span>;
+      }
+    },
+    {
+      key: "fee",
+      header: "Fee",
+      render: (row) => `₹${row.fee || 0}`
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      render: (row) => (
+        <div className="flex gap-2">
+          <button
+            className="btn btn-sm btn-info"
+            onClick={() => {
+              setSelectedEvent(row);
+              setShowDetailsModal(true);
+            }}
+          >
+            View
+          </button>
+          <button
+            className="btn btn-sm btn-primary"
+            onClick={() => handleEdit(row)}
+          >
+            Edit
+          </button>
+          <button
+            className="btn btn-sm btn-danger"
+            onClick={() => handleDelete(row)}
+          >
+            Delete
+          </button>
+        </div>
+      )
+    }
+  ];
+
+  if (loading && !events.length) {
+    return <div className="p-8 text-center">Loading events...</div>;
   }
 
   return (
-    <div className="manager-events">
-      <header className="page-header">
-        <div className="header-content">
-          <h1>My Events</h1>
-          <p>Manage all events you have created</p>
+    <div className="enhanced-page-container">
+      {/* Page Header */}
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Events Management</h1>
+          <p className="page-subtitle">Manage your hackathon events</p>
         </div>
-        <button
-          className="btn-create-event"
-          onClick={() => navigate("/manager/create-event")}
-        >
-          + Create New Event
+        <button className="btn btn-primary" onClick={handleCreate}>
+          + Create Event
         </button>
-      </header>
+      </div>
 
-      {error && <div className="error-message">{error}</div>}
-
-      <div className="events-controls">
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder="Search events..."
-            value={searchTerm}
-            onChange={handleSearchChange}
-            className="search-input"
-          />
+      {/* Stats Bar */}
+      <div className="stats-bar">
+        <div className="stat-card">
+          <div className="stat-label">Total Events</div>
+          <div className="stat-value">{stats.total}</div>
         </div>
-
-        <FilterPanel
-          filters={filterConfig}
-          onFilterChange={handleFilterChange}
-          onClearFilters={handleClearFilters}
-          isOpen={filterOpen}
-          onToggle={() => setFilterOpen(!filterOpen)}
-        />
-
-        <div className="sort-controls">
-          <select
-            value={sortBy}
-            onChange={(e) => handleSortChange(e.target.value, sortOrder)}
-            className="sort-select"
-          >
-            <option value="createdAt">Sort by Date</option>
-            <option value="name">Sort by Name</option>
-            <option value="startDate">Sort by Start Date</option>
-          </select>
-          <button
-            className={`sort-order-btn ${sortOrder}`}
-            onClick={() =>
-              handleSortChange(sortBy, sortOrder === "asc" ? "desc" : "asc")
-            }
-          >
-            {sortOrder === "asc" ? "↑" : "↓"}
-          </button>
+        <div className="stat-card">
+          <div className="stat-label">Upcoming</div>
+          <div className="stat-value text-blue-500">{stats.upcoming}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Ongoing</div>
+          <div className="stat-value text-green-500">{stats.ongoing}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Completed</div>
+          <div className="stat-value text-gray-500">{stats.completed}</div>
         </div>
       </div>
 
-      {paginatedData.data.length > 0 ? (
-        <>
-          <div className="events-grid">
-            {paginatedData.data.map((event) => (
-              <div key={event._id} className="event-card">
-                <div className="card-header">
-                  <h3>{event.name}</h3>
-                  {getStatusBadge(event.status)}
-                </div>
+      {/* Error Message */}
+      {error && <div className="error-message">⚠️ {error}</div>}
 
-                <p className="event-description">
-                  {event.description?.substring(0, 100)}...
-                </p>
+      {/* Filter Section */}
+      <div className="filter-section">
+        <button
+          className="filter-toggle"
+          onClick={() => setShowFilters(!showFilters)}
+        >
+          🔍 Filters {showFilters ? "▾" : "▸"}
+        </button>
 
-                <div className="event-details">
-                  <div className="detail-item">
-                    <span className="detail-label">Participants:</span>
-                    <span>{event.registrationCount || 0}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Start:</span>
-                    <span>
-                      {new Date(event.startDate).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">End:</span>
-                    <span>{new Date(event.endDate).toLocaleDateString()}</span>
-                  </div>
-                </div>
+        {showFilters && (
+          <div className="filter-panel">
+            <div className="filter-group">
+              <label>Search</label>
+              <input
+                type="text"
+                placeholder="Search events..."
+                value={filters.searchTerm}
+                onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
+                className="form-input"
+              />
+            </div>
 
-                <div className="card-actions">
-                  <button
-                    className="btn-view"
-                    onClick={() => navigate(`/manager/events/${event._id}`)}
-                  >
-                    View Details
-                  </button>
-                  <button
-                    className="btn-edit"
-                    onClick={() =>
-                      navigate(`/manager/events/${event._id}/edit`)
-                    }
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="btn-delete"
-                    onClick={() => handleDeleteEvent(event._id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+            <div className="filter-group">
+              <label>Status</label>
+              <select
+                value={filters.status}
+                onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                className="form-input"
+              >
+                <option value="all">All Status</option>
+                <option value="upcoming">Upcoming</option>
+                <option value="ongoing">Ongoing</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
 
-          <Pagination
-            currentPage={currentPage}
-            totalPages={paginatedData.pages}
-            onPageChange={setCurrentPage}
-            itemsPerPage={ITEMS_PER_PAGE}
-            totalItems={filteredEvents.length}
-          />
-        </>
-      ) : (
-        <div className="no-results">
-          <p>No events created yet</p>
-          {Object.keys(activeFilters).length > 0 && (
-            <button className="reset-btn" onClick={handleClearFilters}>
-              Clear Filters
+            <div className="filter-group">
+              <label>Date Range</label>
+              <select
+                value={filters.dateRange}
+                onChange={(e) => setFilters({ ...filters, dateRange: e.target.value })}
+                className="form-input"
+              >
+                <option value="all">All Dates</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="quarter">This Quarter</option>
+              </select>
+            </div>
+
+            <button
+              className="btn btn-secondary"
+              onClick={() => setFilters({ searchTerm: "", status: "all", dateRange: "all" })}
+            >
+              Reset Filters
             </button>
-          )}
-          <button
-            className="btn-create-event"
-            onClick={() => navigate("/manager/create-event")}
-          >
-            Create Your First Event
-          </button>
-        </div>
+          </div>
+        )}
+      </div>
+
+      {/* Content Area */}
+      <div className="content-area">
+        {filteredData.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">📭</div>
+            <h3>No Events Found</h3>
+            <p>Create your first event to get started</p>
+            <button className="btn btn-primary" onClick={handleCreate}>
+              Create Event
+            </button>
+          </div>
+        ) : (
+          <>
+            <DataTable
+              columns={columns}
+              data={paginatedData}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+              onSort={handleSort}
+            />
+
+            {/* Pagination */}
+            <div className="pagination-area">
+              <span className="pagination-info">
+                Page {currentPage} of {totalPages} | Showing {paginatedData.length} of {filteredData.length}
+              </span>
+              <div className="pagination-controls">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  ←
+                </button>
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const page = Math.max(1, currentPage - 2) + i;
+                  return page <= totalPages ? (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={currentPage === page ? "active" : ""}
+                    >
+                      {page}
+                    </button>
+                  ) : null;
+                })}
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  →
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Event Form Modal */}
+      <CreateEvent
+        isOpen={showCreateEventModal}
+        problems={problems}
+        onClose={() => setShowCreateEventModal(false)}
+        onSuccess={fetchEvents}
+      />
+
+      <UpdateEvent
+        isOpen={showUpdateEventModal}
+        event={selectedEvent}
+        problems={problems}
+        onClose={() => setShowUpdateEventModal(false)}
+        onSuccess={fetchEvents}
+      />
+
+      {/* Details Modal */}
+      {showDetailsModal && selectedEvent && (
+        <Modal
+          isOpen={showDetailsModal}
+          onClose={() => setShowDetailsModal(false)}
+          title={selectedEvent.title}
+        >
+          <div className="modal-content">
+            <div className="details-row">
+              <div className="label">Title:</div>
+              <span>{selectedEvent.title}</span>
+            </div>
+            <div className="details-row">
+              <div className="label">Description:</div>
+              <span>{selectedEvent.description}</span>
+            </div>
+            <div className="details-row">
+              <div className="label">Start Date:</div>
+              <span>{new Date(selectedEvent.startDate).toLocaleString()}</span>
+            </div>
+            <div className="details-row">
+              <div className="label">End Date:</div>
+              <span>{new Date(selectedEvent.endDate).toLocaleString()}</span>
+            </div>
+            <div className="details-row">
+              <div className="label">Fee:</div>
+              <span>₹{selectedEvent.fee || 0}</span>
+            </div>
+            <div className="details-row">
+              <div className="label">Prize Money:</div>
+              <span>₹{selectedEvent.prizeMoney || 0}</span>
+            </div>
+            <div className="details-row">
+              <div className="label">Venue:</div>
+              <span>{selectedEvent.venue || "Not specified"}</span>
+            </div>
+            <div className="modal-actions">
+              <button className="btn btn-secondary" onClick={() => setShowDetailsModal(false)}>
+                Close
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  setSelectedEvent(null);
+                  handleEdit(selectedEvent);
+                  setShowDetailsModal(false);
+                }}
+              >
+                Edit Event
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Confirm Delete Modal */}
+      {showConfirmDelete && deleteTarget && (
+        <ConfirmDialog
+          isOpen={showConfirmDelete}
+          title="Delete Event"
+          message={`Are you sure you want to delete "${deleteTarget.title}"? This action cannot be undone.`}
+          onConfirm={confirmDelete}
+          onCancel={() => setShowConfirmDelete(false)}
+          isDangerous={true}
+        />
       )}
     </div>
   );
 };
 
-export default ManagerEvents;
+export default Events;
+  

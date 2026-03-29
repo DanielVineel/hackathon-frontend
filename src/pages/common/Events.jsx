@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import API from "../../services/api";
+import API from "../../api/api";
 import { getToken } from "../../utils/auth";
 
 const Events = () => {
@@ -10,7 +10,7 @@ const Events = () => {
   const fetchEvents = async (selectedStatus) => {
     const data={"status":status}
     try {
-      const res=await API.getEvents(data)
+      const res=await API.get("/events", {params: data})
 
       setEvents(res.data);
     } catch (err) {

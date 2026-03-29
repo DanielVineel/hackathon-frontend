@@ -21,7 +21,7 @@ const StudentCodeEditor = () => {
 
   const fetchProblem = async () => {
     try {
-      const res = await API.get(`/student/problems/${problemId}`);
+      const res = await API.get(`/student/problem/${problemId}`);
       setProblem(res.data?.data);
       setCode(res.data?.data?.template || "");
     } catch (err) {
@@ -34,11 +34,12 @@ const StudentCodeEditor = () => {
   const handleRunTests = async () => {
     try {
       setSubmitting(true);
-      const res = await API.post(`/student/problems/${problemId}/run`, {
+      const res = await API.post(`/submissions/run`, {
+        problemId,
         code,
         language,
       });
-      setTestResults(res.data?.data);
+      setTestResults(res.data?.results);
       setShowResults(true);
     } catch (err) {
       alert("Error running tests");
@@ -50,7 +51,8 @@ const StudentCodeEditor = () => {
   const handleSubmit = async () => {
     try {
       setSubmitting(true);
-      const res = await API.post(`/student/problems/${problemId}/submit`, {
+      const res = await API.post(`/submissions/submit`, {
+        problemId,
         code,
         language,
       });

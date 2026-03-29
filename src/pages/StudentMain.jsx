@@ -6,14 +6,23 @@ import ProtectedRoute from "../components/common/ProtectedRoute";
 
 // ===== Student Pages =====
 import StudentDashboard from "./student/Dashboard";
-import Events from "./common/Events";
-import EventDetails from "./common/EventDetails";
-import Problems from "./common/Problems";
-import Certificates from "./student/Certificates";
+import StudentEvents from "./student/Events";
+import EventDetailsPage from "./student/EventDetailsPage";
+import EventAttemptPage from "./student/EventAttemptPage";
+import ProblemSolverPage from "./student/ProblemSolverPage";
+import StudentProblems from "./student/Problems";
+import StudentCertificates from "./student/Certificates";
 import EventHistory from "./student/EventHistory";
 import ProblemHistory from "./student/ProblemHistory";
 import PaymentHistory from "./student/PaymentHistory";
-import StudentSettings from "./student/Settings";
+import Settings from "./student/Settings";
+import PointsDashboard from "./student/PointsDashboard";
+import CalendarPage from "./student/Calendar";
+import ActivityIntensityDashboard from "./student/ActivityIntensity";
+import StudentCodeEditor from "./student/CodeEditor";
+import GlobalLeaderboard from "./student/GlobalLeaderboard";
+import EventLeaderboard from "./student/EventLeaderboard";
+import StudentProfile from "./student/Profile";
 const StudentRoutes = () => {
   return (
     <Routes>
@@ -32,13 +41,26 @@ const StudentRoutes = () => {
         {/* ===== Student Routes ===== */}
         <Route path="dashboard" element={<StudentDashboard />} />
 
-        <Route path="events" element={<Events />} />
+        <Route path="points" element={<PointsDashboard />} />
 
-        <Route path="events/:id" element={<EventDetails />} />
+        <Route path="calendar" element={<CalendarPage />} />
 
-        <Route path="problems" element={<Problems />} />
+        <Route path="activity-intensity" element={<ActivityIntensityDashboard />} />
 
-        <Route path="certificates" element={<Certificates />} />
+        {/* ===== Events Routes ===== */}
+        <Route path="events" element={<StudentEvents />} />
+
+        <Route path="event/:eventId" element={<EventDetailsPage />} />
+
+        <Route path="event/:eventId/attempt" element={<EventAttemptPage />} />
+
+        {/* ===== Problems Routes ===== */}
+        <Route path="problem/:problemId" element={<ProblemSolverPage />} />
+
+        <Route path="problems" element={<StudentProblems />} />
+
+        {/* ===== Other Routes ===== */}
+        <Route path="certificates" element={<StudentCertificates />} />
 
         <Route path="event-history" element={<EventHistory />} />
 
@@ -46,7 +68,15 @@ const StudentRoutes = () => {
 
         <Route path="payment-history" element={<PaymentHistory />} />
 
-        <Route path="settings" element={<StudentSettings />} />
+        <Route path="settings" element={<Settings />} />
+
+        <Route path="code-editor/:problemId" element={<StudentCodeEditor />} />
+
+        <Route path="global-leaderboard" element={<GlobalLeaderboard />} />
+
+        <Route path="event-leaderboard/:eventId" element={<EventLeaderboard />} />
+
+        <Route path="profile" element={<StudentProfile />} />
 
       </Route>
 

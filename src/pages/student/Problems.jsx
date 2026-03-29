@@ -6,21 +6,30 @@ import { getBlutoStorage, setBlutoStorage } from "../../utils/storage";
 import { applyFilters } from "../../utils/filters";
 import { paginateArray } from "../../utils/pagination";
 import API from "../../api/api";
-import "../styles/StudentProblems.css";
+import "../../styles/StudentProblems.css";
 
+/**
+ * StudentProblems Component
+ * Displays problems for a specific event with filtering, sorting, and pagination
+ */
 const StudentProblems = () => {
   const navigate = useNavigate();
   const { eventId } = useParams();
+
+  // Data States
   const [problems, setProblems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [eventDetails, setEventDetails] = useState(null);
+
+  // UI States
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 6;
 
   // Filters with bluto namespace
-  const [filterOpen, setFilterOpen] = useState(false);
   const [activeFilters, setActiveFilters] = useState(
     getBlutoStorage("student-problems-filters", {})
   );
@@ -28,47 +37,87 @@ const StudentProblems = () => {
     getBlutoStorage("student-problems-search", "")
   );
   const [sortBy, setSortBy] = useState(
-    getBlutoStorage("student-problems-sort", "difficulty")
+    getBlutoStorage("student-problems-sort", "name")
   );
   const [sortOrder, setSortOrder] = useState(
     getBlutoStorage("student-problems-sort-order", "asc")
   );
 
   useEffect(() => {
-    fetchProblems();
-  }, [eventId]);
+    
+      fetchProblems();
+    
+  }, []);
 
+  /**
+   * Fetch problems for the event
+   */
   const fetchProblems = async () => {
     try {
       setLoading(true);
-      const res = await API.get(`/student/event/${eventId}/problems`);
-      setProblems(res.data?.data || []);
       setError(null);
+
+     
+
+      const res = await API.get(`/problems`);
+     
+      // Handle different API response structures
+      let problemsData = [];
+      if (res.data?.problems) {
+         if (Array.isArray(res.data.problems)) {
+          problemsData = res.data.problems;
+        }
+      }
+
+      // Ensure it's always an array
+   
+      setProblems(Array.isArray(problemsData) ? problemsData : []);
+      setCurrentPage(1); // Reset to first page on new data
     } catch (err) {
-      console.error("Error:", err);
-      setError("Failed to load problems");
+      console.error("Error fetching problems:", err);
+      const errorMsg =
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to load problems";
+      setError(errorMsg);
       setProblems([]);
     } finally {
       setLoading(false);
     }
   };
 
+  /**
+   * Apply filters to problems
+   */
   const filteredProblems = applyFilters(problems, {
     searchTerm,
-    searchFields: ["name", "statement"],
+    searchFields: [ "title", "description"],
     filters: activeFilters,
     sortBy,
     sortOrder,
   });
 
-  const paginatedData = paginateArray(filteredProblems, currentPage, ITEMS_PER_PAGE);
+  /**
+   * Paginate filtered problems
+   */
+  const paginatedData = paginateArray(
+    filteredProblems,
+    currentPage,
+    ITEMS_PER_PAGE
+  );
 
+  /**
+   * Handle filter changes
+   */
   const handleFilterChange = (filters) => {
     setBlutoStorage("student-problems-filters", filters);
     setActiveFilters(filters);
     setCurrentPage(1);
   };
 
+  /**
+   * Clear all filters
+   */
   const handleClearFilters = () => {
     setBlutoStorage("student-problems-filters", {});
     setBlutoStorage("student-problems-search", "");
@@ -77,6 +126,9 @@ const StudentProblems = () => {
     setCurrentPage(1);
   };
 
+  /**
+   * Handle search input
+   */
   const handleSearchChange = (e) => {
     const term = e.target.value;
     setSearchTerm(term);
@@ -84,6 +136,9 @@ const StudentProblems = () => {
     setCurrentPage(1);
   };
 
+  /**
+   * Handle sort changes
+   */
   const handleSortChange = (field, order) => {
     setSortBy(field);
     setSortOrder(order);
@@ -92,9 +147,23 @@ const StudentProblems = () => {
     setCurrentPage(1);
   };
 
+  /**
+   * Handle navigate to problem solver
+   */
+  const handleSolveProblem = (problemId) => {
+    if (problemId) {
+      navigate(`/student/problem/${problemId}`, {
+        state: { eventId, previousProblems: problems }
+      });
+    }
+  };
+
+  /**
+   * Filter configuration
+   */
   const filterConfig = [
     {
-      key: "difficulty",
+      key: "level",
       type: "multiselect",
       label: "Difficulty Level",
       options: [
@@ -115,80 +184,130 @@ const StudentProblems = () => {
     },
   ];
 
-  if (loading) return <div className="loading">Loading problems...</div>;
+  // Loading State
+  if (loading) {
+    return (
+      <div className="student-problems loading">
+        <div className="loader"></div>
+        <p>Loading problems...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="student-problems">
+      {/* Header */}
       <div className="header">
-        <h1>Event Problems</h1>
-        <button className="btn-back" onClick={() => navigate("/student/events")}>
+        <div className="header-content">
+          <h1>Event Problems</h1>
+          <p className="problems-count">
+            {filteredProblems.length} problem{filteredProblems.length !== 1 ? "s" : ""}
+          </p>
+        </div>
+        <button
+          className="btn-back"
+          onClick={() => navigate("/student/events")}
+        >
           ← Back to Events
         </button>
       </div>
 
-      {error && <div className="error-message">{error}</div>}
-
-      <div className="problems-controls">
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder="Search problems..."
-            value={searchTerm}
-            onChange={handleSearchChange}
-            className="search-input"
-          />
-        </div>
-
-        <FilterPanel
-          filters={filterConfig}
-          onFilterChange={handleFilterChange}
-          onClearFilters={handleClearFilters}
-          isOpen={filterOpen}
-          onToggle={() => setFilterOpen(!filterOpen)}
-        />
-
-        <div className="sort-controls">
-          <select
-            value={sortBy}
-            onChange={(e) => handleSortChange(e.target.value, sortOrder)}
-            className="sort-select"
-          >
-            <option value="difficulty">Sort by Difficulty</option>
-            <option value="name">Sort by Name</option>
-            <option value="score">Sort by Score</option>
-          </select>
-          <button
-            className={`sort-order-btn ${sortOrder}`}
-            onClick={() =>
-              handleSortChange(sortBy, sortOrder === "asc" ? "desc" : "asc")
-            }
-          >
-            {sortOrder === "asc" ? "↑" : "↓"}
+      {/* Error Message */}
+      {error && (
+        <div className="error-message">
+          <p>{error}</p>
+          <button onClick={fetchProblems} className="retry-btn">
+            Try Again
           </button>
         </div>
-      </div>
+      )}
 
-      {paginatedData.data.length > 0 ? (
+      {/* Controls */}
+      {problems.length > 0 && !error && (
+        <div className="problems-controls">
+          <div className="search-box">
+            <input
+              type="text"
+              placeholder="Search problems by name or description..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+              className="search-input"
+            />
+          </div>
+
+          <FilterPanel
+            filters={filterConfig}
+            onFilterChange={handleFilterChange}
+            onClearFilters={handleClearFilters}
+            isOpen={filterOpen}
+            onToggle={() => setFilterOpen(!filterOpen)}
+          />
+
+          <div className="sort-controls">
+            <select
+              value={sortBy}
+              onChange={(e) => handleSortChange(e.target.value, sortOrder)}
+              className="sort-select"
+            >
+              <option value="name">Sort by Name</option>
+              <option value="level">Sort by Difficulty</option>
+              <option value="score">Sort by Score</option>
+            </select>
+            <button
+              className={`sort-order-btn ${sortOrder}`}
+              onClick={() =>
+                handleSortChange(sortBy, sortOrder === "asc" ? "desc" : "asc")
+              }
+              title={sortOrder === "asc" ? "Ascending" : "Descending"}
+            >
+              {sortOrder === "asc" ? "↑" : "↓"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Problems Grid */}
+      {paginatedData.data && paginatedData.data.length > 0 ? (
         <>
           <div className="problems-grid">
             {paginatedData.data.map((problem) => (
               <div key={problem._id} className="problem-card">
                 <div className="card-header">
-                  <h3>{problem.name}</h3>
-                  <span className={`difficulty ${problem.difficulty}`}>
-                    {problem.difficulty}
+                  <h3 className="problem-name">
+                    {problem.title || "Untitled Problem"}
+                  </h3>
+                  <span
+                    className={`difficulty-badge difficulty--${
+                      problem.level ||  "medium"
+                    }`}
+                  >
                   </span>
                 </div>
-                <p className="statement">
-                  {problem.statement?.substring(0, 100)}...
-                </p>
+
+                {( problem.description) && (
+                  <p className="statement">
+                    {( problem.description).substring(0, 100)}
+                    {( problem.description).length > 100 ? "..." : ""}
+                  </p>
+                )}
+
                 <div className="card-meta">
-                  <span>Score: {problem.score}</span>
-                  <span>Status: {problem.status || "unsolved"}</span>
+                  {problem.score !== undefined && (
+                    <span className="score">⭐ {problem.score} points</span>
+                  )}
+                  <span className="status">
+                    {problem.status === "solved"
+                      ? "✓ Solved"
+                      : problem.status === "attempted"
+                      ? "⏳ Attempted"
+                      : "Unsolved"}
+                  </span>
                 </div>
+
                 <button
                   className="btn-solve"
-                  onClick={() => navigate(`/student/problem/${problem._id}`)}
+                  onClick={() => handleSolveProblem(problem._id)}
+                  disabled={!problem._id}
                 >
                   Solve Problem →
                 </button>
@@ -196,22 +315,40 @@ const StudentProblems = () => {
             ))}
           </div>
 
-          <Pagination
-            currentPage={currentPage}
-            totalPages={paginatedData.pages}
-            onPageChange={setCurrentPage}
-            itemsPerPage={ITEMS_PER_PAGE}
-            totalItems={filteredProblems.length}
-          />
+          {/* Pagination */}
+          {paginatedData.pages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={paginatedData.pages}
+              onPageChange={setCurrentPage}
+              itemsPerPage={ITEMS_PER_PAGE}
+              totalItems={filteredProblems.length}
+            />
+          )}
         </>
       ) : (
-        <div className="empty">
-          <p>No problems found matching your criteria</p>
-          {Object.keys(activeFilters).length > 0 && (
-            <button className="reset-btn" onClick={handleClearFilters}>
-              Clear Filters
+        <div className="empty-state">
+          <div className="empty-icon">📭</div>
+          <h3>No Problems Found</h3>
+          <p>
+            {Object.keys(activeFilters).length > 0 || searchTerm
+              ? "No problems match your search criteria"
+              : "No problems available for this event"}
+          </p>
+          {(Object.keys(activeFilters).length > 0 || searchTerm) && (
+            <button
+              className="btn-reset-filters"
+              onClick={handleClearFilters}
+            >
+              Clear Filters & Search
             </button>
           )}
+          <button
+            className="btn-back-to-events"
+            onClick={() => navigate("/student/events")}
+          >
+            ← Back to Events
+          </button>
         </div>
       )}
     </div>

@@ -1,6 +1,3 @@
-/* Assign to Manager.css for Submissions, Leaderboard, Registrations, Certificates */
-@import './Manager.css';
-
 /* Manager Submissions Specific */
 .manager-submissions {
   padding: 20px;
