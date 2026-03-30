@@ -14,7 +14,7 @@ const ProblemSolverPage = () => {
   const { eventId, attemptId, fromEventAttempt, remainingTime: initialTime } = locationState;
 
   // Data states
-  const [problem, setProblems] = useState(null);
+  const [problem, setProblem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -116,7 +116,7 @@ const ProblemSolverPage = () => {
 
       const res = await API.get(`/problems/${problemId}`);
       // Backend returns problem directly (not wrapped in { problem: ... })
-      setProblems(res.data);
+      setProblem(res.data);
 
       // Load saved code from localStorage if available
       const savedCode = localStorage.getItem(`problem-code-${problemId}-${language}`);
@@ -397,7 +397,7 @@ const ProblemSolverPage = () => {
             className="code-editor"
             value={code}
             onChange={handleCodeChange}
-            placeholder={`//Write your ${language.toUpperCase()} code here...\n\nint main(){\n  \n  return 0;\n}`}
+            placeholder={`//Write your ${language.toUpperCase()} code here...`}
             disabled={submitting}
           />
 

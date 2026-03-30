@@ -26,4 +26,5 @@ body {
 }
 .flex-grow-1{
   flex:1;
+  margin:2px;
 }

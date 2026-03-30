@@ -15,6 +15,7 @@ const CreateEvent = ({ isOpen, problems, onClose, onSuccess }) => {
     problems: []
   });
 
+
   const handleSelectProblems = (problemId) => {
     setFormData(prev => ({
       ...prev,
@@ -69,8 +70,8 @@ const CreateEvent = ({ isOpen, problems, onClose, onSuccess }) => {
           <label>Event Title *</label>
           <input
             type="text"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            value={formData.name || ""}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             className="form-input"
             placeholder="e.g., Winter Coding Challenge"
           />
