@@ -186,16 +186,34 @@ export const eventsApi = {
   // Register for event (Student)
   registerForEvent: async (eventId) => {
     try {
-      return await API.post(`/events/${eventId}/register`);
+      return await API.post(`/submissions/events/${eventId}/register`);
     } catch (error) {
       throw error.response?.data || error;
     }
   },
 
-  // Start event
+  // Start event participation
   startEvent: async (eventId) => {
     try {
-      return await API.post(`/events/${eventId}/start`);
+      return await API.post(`/submissions/events/${eventId}/start`);
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // End event participation (Student)
+  endEvent: async (eventId) => {
+    try {
+      return await API.post(`/submissions/events/${eventId}/end`);
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Start working on a problem in an event (Student)
+  startProblem: async (eventId, problemId) => {
+    try {
+      return await API.post(`/submissions/events/${eventId}/problems/${problemId}/start`);
     } catch (error) {
       throw error.response?.data || error;
     }
@@ -265,6 +283,24 @@ export const submissionsApi = {
   runTests: async (data) => {
     try {
       return await API.post('/submissions/run-tests', data);
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Track tab switch for anti-cheat
+  trackTabSwitch: async (submissionId) => {
+    try {
+      return await API.post(`/submissions/problem-submissions/${submissionId}/tab-switch`);
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Track paste attempt for anti-cheat
+  trackPasteAttempt: async (submissionId) => {
+    try {
+      return await API.post(`/submissions/problem-submissions/${submissionId}/paste-attempt`);
     } catch (error) {
       throw error.response?.data || error;
     }

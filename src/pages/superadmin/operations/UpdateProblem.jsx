@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Modal from "../../../components/common/Modal";
+import LanguageMultiSelect from "../../../components/forms/LanguageMultiSelect";
 import API from "../../../api/api";
 
 const UpdateProblem = ({ isOpen, problem, onClose, onSuccess }) => {
@@ -9,6 +10,7 @@ const UpdateProblem = ({ isOpen, problem, onClose, onSuccess }) => {
     description: "",
     level: "easy",
     score: 100,
+    allowedLanguages: [54, 50, 62, 63, 71],
     sampleTestCases: [{ input: "", output: "", explanation: "" }],
     hiddenTestCases: [{ input: "", output: "" }]
   });
@@ -20,6 +22,7 @@ const UpdateProblem = ({ isOpen, problem, onClose, onSuccess }) => {
         description: problem.description || "",
         level: problem.level || "easy",
         score: problem.score || 100,
+        allowedLanguages: problem.allowedLanguages || [54, 50, 62, 63, 71],
         sampleTestCases: problem.sampleTestCases || [{ input: "", output: "", explanation: "" }],
         hiddenTestCases: problem.hiddenTestCases || [{ input: "", output: "" }]
       });
@@ -58,6 +61,11 @@ const UpdateProblem = ({ isOpen, problem, onClose, onSuccess }) => {
       return;
     }
 
+    if (formData.allowedLanguages.length === 0) {
+      alert("Please select at least one programming language");
+      return;
+    }
+
     try {
       setLoading(true);
       const saveData = {
@@ -65,6 +73,7 @@ const UpdateProblem = ({ isOpen, problem, onClose, onSuccess }) => {
         description: formData.description,
         level: formData.level,
         score: formData.score,
+        allowedLanguages: formData.allowedLanguages,
         sampleTestCases: formData.sampleTestCases.filter(tc => tc.input && tc.output),
         hiddenTestCases: formData.hiddenTestCases.filter(tc => tc.input && tc.output)
       };
@@ -141,6 +150,15 @@ const UpdateProblem = ({ isOpen, problem, onClose, onSuccess }) => {
                 min="1"
               />
             </div>
+          </div>
+
+          <div className="form-group">
+            <label>Allowed Programming Languages *</label>
+            <LanguageMultiSelect
+              selectedLanguages={formData.allowedLanguages}
+              onChange={(languages) => setFormData({ ...formData, allowedLanguages: languages })}
+              role="superadmin"
+            />
           </div>
         </div>
 

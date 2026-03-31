@@ -9,6 +9,7 @@ import StudentDashboard from "./student/Dashboard";
 import StudentEvents from "./student/Events";
 import EventDetailsPage from "./student/EventDetailsPage";
 import EventAttemptPage from "./student/EventAttemptPage";
+import EventProblemSolver from "./student/EventProblemSolver";
 import ProblemSolverPage from "./student/ProblemSolverPage";
 import StudentProblems from "./student/Problems";
 import StudentCertificates from "./student/Certificates";
@@ -53,6 +54,8 @@ const StudentRoutes = () => {
         <Route path="event/:eventId" element={<EventDetailsPage />} />
 
         <Route path="event/:eventId/attempt" element={<EventAttemptPage />} />
+
+        <Route path="event/:eventId/solve" element={<EventProblemSolver />} />
 
         {/* ===== Problems Routes ===== */}
         <Route path="problem/:problemId" element={<ProblemSolverPage />} />

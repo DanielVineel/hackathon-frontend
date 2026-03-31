@@ -108,7 +108,7 @@ const EventAttemptPage = () => {
 
     try {
       setLoading(true);
-      await API.put(`/student/event/end/${eventId}`);
+      await API.post(`/submissions/events/${eventId}/end`);
       
       if (isAutoSubmit || isExpired) {
         alert("⏰ Time expired! Your event attempt has been submitted.");

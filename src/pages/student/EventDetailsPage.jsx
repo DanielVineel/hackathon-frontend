@@ -73,7 +73,7 @@ const EventDetailsPage = () => {
   const handleRegister = async () => {
     try {
       setLoading(true);
-      const res = await API.post(`/student/event/register/${eventId}`);
+      const res = await API.post(`/submissions/events/${eventId}/register`);
       setRegistration(res.data.registration);
       setRegistrationStatus(res.data.registration.registrationStatus);
       alert("Successfully registered for the event!");
@@ -122,10 +122,11 @@ const EventDetailsPage = () => {
   const handleStartEvent = async () => {
     try {
       setLoading(true);
-      const res = await API.post(`/student/event/start/${eventId}`);
+      const res = await API.post(`/submissions/events/${eventId}/start`);
       
       if (res.data?.attemptId) {
-        navigate(`/student/event/${eventId}/attempt`, {
+        // Navigate to new event problem solver with 3-column layout
+        navigate(`/student/event/${eventId}/solve`, {
           state: {
             attemptId: res.data.attemptId,
             startTime: res.data.startTime,

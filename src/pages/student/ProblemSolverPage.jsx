@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import API from "../../api/api";
+import CodeEditor from "../../components/code-editor/CodeEditor";
 import Modal from "../../components/common/Modal";
 import "../styles/student/ProblemSolverPage.css";
 
@@ -11,7 +12,7 @@ const ProblemSolverPage = () => {
 
   // Location state
   const locationState = location.state || {};
-  const { eventId, attemptId, fromEventAttempt, remainingTime: initialTime } = locationState;
+  const { eventId, attemptId, fromEventAttempt, initialRemainingTime } = locationState;
 
   // Data states
   const [problem, setProblem] = useState(null);
@@ -24,18 +25,109 @@ const ProblemSolverPage = () => {
   const [submitting, setSubmitting] = useState(false);
 
   // Timer states
-  const [remainingTime, setRemainingTime] = useState(initialTime || 0);
+  const [remainingTime, setRemainingTime] = useState(initialRemainingTime || 0);
   const [isTimeExpired, setIsTimeExpired] = useState(false);
   const [showTimeWarning, setShowTimeWarning] = useState(false);
+  const [problemStartId, setProblemStartId] = useState(null);
 
   // Test results
-  const [showTestResults, setShowTestResults] = useState(false);
   const [testResults, setTestResults] = useState([]);
-  const [testMessage, setTestMessage] = useState("");
 
-  // Timer countdown effect
+  /**
+   * Format time remaining (HH:MM:SS)
+   */
+  const formatTime = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  };
+
+  /**
+   * Fetch problem details and restore timer from backend if exists
+   */
+  const fetchProblemDetails = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Fetch problem
+      let problemEndpoint = `/problems/${problemId}`;
+      if (eventId) {
+        problemEndpoint = `/student/event/${eventId}/problem/${problemId}`;
+      }
+
+      const res = await API.get(problemEndpoint);
+      setProblem(res.data);
+
+      // Restore timer from backend
+      await restoreTimerFromBackend();
+
+      // Load saved code from localStorage if available
+      const savedCode = localStorage.getItem(`problem-code-${problemId}-${language}`);
+      if (savedCode) {
+        setCode(savedCode);
+      }
+    } catch (err) {
+      console.error("Error fetching problem:", err);
+      setError(err.response?.data?.message || "Failed to load problem");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Start solving a problem - save start time to backend
+   */
+  const startProblemSolving = async () => {
+    try {
+      const endpoint = eventId
+        ? `/student/event/${eventId}/problem/${problemId}/start`
+        : `/student/problem/${problemId}/start`;
+
+      const res = await API.post(endpoint);
+
+      if (res.data?.startId) {
+        setProblemStartId(res.data.startId);
+        setRemainingTime(res.data.remainingTime || 3600);
+      }
+    } catch (err) {
+      console.error("Error starting problem:", err);
+      // Continue anyway if there's an error
+    }
+  };
+
+  /**
+   * Restore timer from backend for disconnected sessions
+   */
+  const restoreTimerFromBackend = async () => {
+    try {
+      const endpoint = eventId
+        ? `/student/event/${eventId}/problem/${problemId}/remaining-time`
+        : `/student/problem/${problemId}/remaining-time`;
+
+      const res = await API.get(endpoint);
+
+      if (res.data?.isStarted) {
+        // Problem solving already started - restore timer
+        setProblemStartId(res.data.startId);
+        setRemainingTime(res.data.remainingTime);
+      } else {
+        // Not started yet - will start on useEffect after problem loads
+        setRemainingTime(res.data?.totalTime || 3600);
+      }
+    } catch (err) {
+      console.error("Error fetching timer from backend:", err);
+      // Default to 1 hour
+      setRemainingTime(3600);
+    }
+  };
+
+  /**
+   * Timer countdown effect
+   */
   useEffect(() => {
-    if (remainingTime <= 0 || !initialTime) return;
+    if (remainingTime <= 0 || !problemStartId) return;
 
     if (remainingTime <= 300 && !showTimeWarning) {
       setShowTimeWarning(true);
@@ -56,21 +148,23 @@ const ProblemSolverPage = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [remainingTime, initialTime]);
-
-  useEffect(() => {
-    fetchProblemDetails();
-  }, [problemId]);
+  }, [remainingTime, problemStartId]);
 
   /**
-   * Format time remaining (HH:MM:SS)
+   * Fetch problem and try to restore timer on mount
    */
-  const formatTime = (seconds) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-  };
+  useEffect(() => {
+    fetchProblemDetails();
+  }, [problemId, eventId]);
+
+  /**
+   * Start problem solving after problem is loaded
+   */
+  useEffect(() => {
+    if (problem && !problemStartId && !initialRemainingTime) {
+      startProblemSolving();
+    }
+  }, [problem, problemStartId, initialRemainingTime]);
 
   /**
    * Handle automatic submission when time expires
@@ -81,7 +175,11 @@ const ProblemSolverPage = () => {
     try {
       setSubmitting(true);
 
-      const res = await API.post(`/submissions/submit`, {
+      const endpoint = eventId
+        ? `/submissions/event/submit`
+        : `/submissions/submit`;
+
+      const res = await API.post(endpoint, {
         problemId,
         eventId: eventId || null,
         code,
@@ -93,7 +191,7 @@ const ProblemSolverPage = () => {
         alert("⏰ Time expired! Your solution has been automatically submitted.");
         localStorage.removeItem(`problem-code-${problemId}-${language}`);
         
-        if (fromEventAttempt) {
+        if (fromEventAttempt && eventId) {
           navigate(`/student/event/${eventId}/attempt`, {
             state: { autoSubmitted: true }
           });
@@ -109,30 +207,7 @@ const ProblemSolverPage = () => {
     }
   };
 
-  const fetchProblemDetails = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const res = await API.get(`/problems/${problemId}`);
-      // Backend returns problem directly (not wrapped in { problem: ... })
-      setProblem(res.data);
-
-      // Load saved code from localStorage if available
-      const savedCode = localStorage.getItem(`problem-code-${problemId}-${language}`);
-      if (savedCode) {
-        setCode(savedCode);
-      }
-    } catch (err) {
-      console.error("Error fetching problem:", err);
-      setError(err.response?.data?.message || "Failed to load problem");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCodeChange = (e) => {
-    const newCode = e.target.value;
+  const handleCodeChange = (newCode) => {
     setCode(newCode);
     // Auto-save to localStorage
     localStorage.setItem(`problem-code-${problemId}-${language}`, newCode);
@@ -156,23 +231,23 @@ const ProblemSolverPage = () => {
 
     try {
       setSubmitting(true);
-      setTestMessage("Running sample tests...");
-      setShowTestResults(true);
 
-      const res = await API.post(`/submissions/run`, {
+      const endpoint = eventId
+        ? `/submissions/event/run`
+        : `/submissions/run`;
+
+      const res = await API.post(endpoint, {
         problemId,
+        eventId: eventId || null,
         code,
         language
       });
 
       if (res.data?.results) {
         setTestResults(res.data.results);
-        const passedCount = res.data.results.filter(r => r.passed).length;
-        setTestMessage(`Results: ${passedCount}/${res.data.results.length} test cases passed`);
       }
     } catch (err) {
-      setTestMessage(err.response?.data?.message || "Error running tests");
-      setTestResults([]);
+      alert(err.response?.data?.message || "Error running tests");
     } finally {
       setSubmitting(false);
     }
@@ -191,7 +266,11 @@ const ProblemSolverPage = () => {
     try {
       setSubmitting(true);
 
-      const res = await API.post(`/submissions/submit`, {
+      const endpoint = eventId
+        ? `/submissions/event/submit`
+        : `/submissions/submit`;
+
+      const res = await API.post(endpoint, {
         problemId,
         eventId: eventId || null,
         code,
@@ -203,7 +282,7 @@ const ProblemSolverPage = () => {
         // Clear saved code
         localStorage.removeItem(`problem-code-${problemId}-${language}`);
         
-        if (fromEventAttempt) {
+        if (fromEventAttempt && eventId) {
           navigate(`/student/event/${eventId}/attempt`);
         } else {
           navigate("/student/problems");
@@ -234,7 +313,7 @@ const ProblemSolverPage = () => {
           <button
             className="btn-back"
             onClick={() => {
-              if (fromEventAttempt) {
+              if (fromEventAttempt && eventId) {
                 navigate(`/student/event/${eventId}/attempt`);
               } else {
                 navigate("/student/problems");
@@ -256,7 +335,7 @@ const ProblemSolverPage = () => {
           <button
             className="btn-back"
             onClick={() => {
-              if (fromEventAttempt) {
+              if (fromEventAttempt && eventId) {
                 navigate(`/student/event/${eventId}/attempt`);
               } else {
                 navigate("/student/problems");
@@ -285,7 +364,7 @@ const ProblemSolverPage = () => {
         </div>
 
         {/* Timer Display */}
-        {initialTime > 0 && (
+        {problemStartId && (
           <div className={`timer-display ${isTimeExpired ? "expired" : remainingTime < 300 ? "warning" : ""}`}>
             <span className="timer-label">Time Remaining</span>
             <span className="timer-value">{formatTime(remainingTime)}</span>
@@ -301,7 +380,7 @@ const ProblemSolverPage = () => {
         <button
           className="btn-back"
           onClick={() => {
-            if (fromEventAttempt) {
+            if (fromEventAttempt && eventId) {
               navigate(`/student/event/${eventId}/attempt`);
             } else {
               navigate("/student/problems");
@@ -312,7 +391,7 @@ const ProblemSolverPage = () => {
         </button>
       </div>
 
-      {/* Time Warning Modal */}
+      {/* Time Warning Banner */}
       {showTimeWarning && remainingTime > 0 && (
         <div className="time-warning-banner">
           <span className="warning-icon">⚠️</span>
@@ -363,106 +442,20 @@ const ProblemSolverPage = () => {
 
         {/* Code Editor */}
         <div className="editor-panel">
-          {/* Language Selector */}
-          <div className="editor-controls">
-            <div className="language-selector">
-              <label>Language:</label>
-              <select value={language} onChange={(e) => handleLanguageChange(e.target.value)}>
-                <option value="cpp">C++</option>
-                <option value="java">Java</option>
-                <option value="python">Python</option>
-              </select>
-            </div>
-
-            <div className="editor-buttons">
-              <button
-                className="btn btn-secondary"
-                onClick={runSampleTests}
-                disabled={submitting}
-              >
-                {submitting ? "Testing..." : "▶ Run Tests"}
-              </button>
-              <button
-                className="btn btn-success"
-                onClick={handleSubmit}
-                disabled={submitting}
-              >
-                {submitting ? "Submitting..." : "✓ Submit Solution"}
-              </button>
-            </div>
-          </div>
-
-          {/* Code Editor */}
-          <textarea
-            className="code-editor"
-            value={code}
-            onChange={handleCodeChange}
-            placeholder={`//Write your ${language.toUpperCase()} code here...`}
-            disabled={submitting}
+          <CodeEditor
+            code={code}
+            setCode={handleCodeChange}
+            language={language}
+            onLanguageChange={handleLanguageChange}
+            onRunTests={runSampleTests}
+            onSubmit={handleSubmit}
+            loading={submitting}
+            mode="problem"
+            height="600px"
+            showButtons={true}
+            testResults={testResults}
+            allowedLanguageIds={problem.allowedLanguages || [54, 50, 62, 63, 71]}
           />
-
-          {/* Test Results Modal */}
-          {showTestResults && (
-            <Modal
-              isOpen={showTestResults}
-              onClose={() => setShowTestResults(false)}
-              title="Test Results"
-            >
-              <div className="modal-content test-results">
-                <p className="test-message">{testMessage}</p>
-
-                {testResults.length > 0 && (
-                  <div className="results-list">
-                    {testResults.map((result, idx) => (
-                      <div key={idx} className={`result-item ${result.passed ? "passed" : "failed"}`}>
-                        <div className="result-header">
-                          <span className="result-number">Test Case {idx + 1}</span>
-                          <span className={`result-badge ${result.passed ? "passed" : "failed"}`}>
-                            {result.passed ? "✓ PASSED" : "✗ FAILED"}
-                          </span>
-                        </div>
-
-                        <div className="result-details">
-                          <div className="detail-item">
-                            <span className="detail-label">Input:</span>
-                            <pre className="detail-value">{result.input}</pre>
-                          </div>
-
-                          <div className="detail-item">
-                            <span className="detail-label">Expected:</span>
-                            <pre className="detail-value">{result.expected}</pre>
-                          </div>
-
-                          <div className="detail-item">
-                            <span className="detail-label">Output:</span>
-                            <pre className={`detail-value ${result.passed ? "correct" : "wrong"}`}>
-                              {result.output || "No output"}
-                            </pre>
-                          </div>
-
-                          {result.error && (
-                            <div className="detail-item">
-                              <span className="detail-label">Error:</span>
-                              <pre className="detail-value error">{result.error}</pre>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <div className="modal-actions">
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => setShowTestResults(false)}
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </Modal>
-          )}
         </div>
       </div>
     </div>
