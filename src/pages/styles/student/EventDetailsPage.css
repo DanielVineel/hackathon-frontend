@@ -1,0 +1,567 @@
+/**
+ * Event Details Page Styles
+ * Unified design matching CodeEditor and EventAttempt pattern
+ */
+
+.event-details-page {
+  width: 100%;
+  background-color: var(--bg-primary);
+  min-height: 100vh;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+
+  &.loading,
+  &.error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-2xl);
+
+    .loader {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    p {
+      color: var(--text-secondary);
+      margin-top: var(--spacing-lg);
+      text-align: center;
+    }
+  }
+
+  .error-message {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-2xl);
+    text-align: center;
+    margin: var(--spacing-2xl);
+
+    h2 {
+      color: var(--danger);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    p {
+      color: var(--text-secondary);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .btn-back {
+      padding: var(--spacing-md) var(--spacing-lg);
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-weight: var(--font-weight-semibold);
+      transition: var(--transition);
+
+      &:hover {
+        background-color: var(--primary-dark);
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Page Header with Back Button */
+.page-header {
+  background-color: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  padding: var(--spacing-lg) var(--spacing-2xl);
+  display: flex;
+  align-items: center;
+
+  .btn-back {
+    padding: var(--spacing-md) var(--spacing-lg);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: var(--font-weight-semibold);
+    transition: var(--transition);
+
+    &:hover {
+      background-color: var(--primary-50);
+      color: var(--primary);
+    }
+  }
+}
+
+/* Main Content Container */
+.event-content-wrapper {
+  flex: 1;
+  padding: var(--spacing-2xl);
+  overflow-y: auto;
+}
+
+/* Event Details Card */
+.event-details-card {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--spacing-2xl);
+}
+
+/* Event Header Section */
+.event-header {
+  grid-column: 1 / -1;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-2xl);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--spacing-2xl);
+  flex-wrap: wrap;
+  box-shadow: var(--shadow-sm);
+
+  > div {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .event-title {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--spacing-md) 0;
+  }
+
+  .event-badges {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: center;
+    flex-wrap: wrap;
+
+    .status-badge {
+      padding: var(--spacing-xs) var(--spacing-md);
+      border-radius: var(--radius-full);
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-bold);
+      text-transform: uppercase;
+
+      &.upcoming {
+        background-color: var(--info-50);
+        color: var(--info);
+      }
+
+      &.ongoing {
+        background-color: var(--success-50);
+        color: var(--success);
+      }
+
+      &.completed {
+        background-color: var(--warning-50);
+        color: var(--warning);
+      }
+    }
+
+    .fee-badge {
+      padding: var(--spacing-xs) var(--spacing-md);
+      background-color: var(--primary-50);
+      color: var(--primary);
+      border-radius: var(--radius-full);
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-bold);
+    }
+  }
+
+  .event-meta {
+    display: flex;
+    gap: var(--spacing-xl);
+    flex-wrap: wrap;
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xs);
+
+      .meta-label {
+        font-size: var(--font-size-xs);
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .meta-value {
+        font-size: var(--font-size-md);
+        font-weight: var(--font-weight-semibold);
+        color: var(--text-primary);
+      }
+    }
+  }
+}
+
+/* Main Content */
+.event-main {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xl);
+}
+
+.event-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+
+  h2 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--text-primary);
+    margin: 0;
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--border);
+  }
+
+  &:not(:last-child) {
+    padding-bottom: var(--spacing-2xl);
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.event-description {
+  color: var(--text-secondary);
+  line-height: 1.8;
+
+  p {
+    margin: 0 0 var(--spacing-md) 0;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+/* Schedule Section */
+.event-schedule {
+  background-color: var(--bg-secondary);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
+}
+
+.schedule-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md) 0;
+  gap: var(--spacing-lg);
+
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .schedule-label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+    min-width: 120px;
+  }
+
+  .schedule-value {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    text-align: right;
+  }
+}
+
+/* Sidebar */
+.event-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xl);
+}
+
+.sidebar-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+
+  h3 {
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-bold);
+    color: var(--text-primary);
+    margin: 0 0 var(--spacing-md) 0;
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--border);
+  }
+
+  &:hover {
+    border-color: var(--primary);
+  }
+}
+
+/* Registration Status Card */
+.registration-status {
+  .status-info {
+    padding: var(--spacing-lg);
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    text-align: center;
+
+    .status-text {
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .status-value {
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-bold);
+      color: var(--primary);
+    }
+  }
+
+  .status-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    font-size: var(--font-size-sm);
+
+    .detail-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--spacing-md);
+      background-color: var(--bg-secondary);
+      border-radius: var(--radius-sm);
+
+      .detail-label {
+        color: var(--text-secondary);
+      }
+
+      .detail-value {
+        font-weight: var(--font-weight-semibold);
+        color: var(--text-primary);
+      }
+    }
+  }
+}
+
+/* Fee Information Card */
+.fee-info {
+  .fee-amount {
+    padding: var(--spacing-lg);
+    background-color: var(--primary-50);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--primary);
+    text-align: center;
+
+    .fee-label {
+      font-size: var(--font-size-xs);
+      color: var(--primary);
+      text-transform: uppercase;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .fee-value {
+      font-size: var(--font-size-2xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--primary);
+    }
+  }
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.btn {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: var(--transition);
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.btn-register {
+    background-color: var(--success);
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: var(--success-dark);
+    }
+  }
+
+  &.btn-start {
+    background-color: var(--primary);
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: var(--primary-dark);
+    }
+  }
+
+  &.btn-withdraw {
+    background-color: var(--danger);
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: var(--danger-dark);
+    }
+  }
+
+  &.btn-pay {
+    background-color: var(--warning);
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: var(--warning-dark);
+    }
+  }
+
+  &.btn-secondary {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+
+    &:hover:not(:disabled) {
+      background-color: var(--primary-50);
+      border-color: var(--primary);
+    }
+  }
+
+  width: 100%;
+}
+
+/* Payment Modal */
+.payment-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+
+    label {
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-semibold);
+      color: var(--text-primary);
+    }
+
+    input {
+      padding: var(--spacing-md);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: var(--font-size-sm);
+      transition: var(--transition);
+
+      &:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-50);
+      }
+
+      &::placeholder {
+        color: var(--text-tertiary);
+      }
+    }
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .event-details-card {
+    grid-template-columns: 1fr;
+  }
+
+  .event-header {
+    flex-direction: column;
+  }
+
+  .event-meta {
+    gap: var(--spacing-lg);
+  }
+}
+
+@media (max-width: 768px) {
+  .event-content-wrapper {
+    padding: var(--spacing-lg);
+  }
+
+  .event-header {
+    padding: var(--spacing-lg);
+
+    .event-title {
+      font-size: var(--font-size-xl);
+    }
+  }
+
+  .event-main,
+  .sidebar-card {
+    padding: var(--spacing-lg);
+  }
+
+  .schedule-item {
+    flex-direction: column;
+    align-items: flex-start;
+
+    .schedule-value {
+      text-align: left;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .page-header {
+    padding: var(--spacing-md) var(--spacing-lg);
+  }
+
+  .event-content-wrapper {
+    padding: var(--spacing-md);
+  }
+
+  .event-header {
+    padding: var(--spacing-md);
+
+    .event-title {
+      font-size: var(--font-size-lg);
+    }
+  }
+
+  .event-main,
+  .sidebar-card {
+    padding: var(--spacing-md);
+  }
+
+  .btn {
+    padding: var(--spacing-md);
+  }
+}

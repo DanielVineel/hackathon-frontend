@@ -1,0 +1,188 @@
+/**
+ * Student Submissions Page Styles
+ */
+
+.student-submissions {
+  width: 100%;
+  background-color: var(--bg-primary);
+  padding: var(--spacing-2xl);
+}
+
+.submissions-header {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.submissions-header h1 {
+  font-size: var(--font-size-3xl);
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-primary);
+}
+
+.submissions-toolbar {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
+  flex-wrap: wrap;
+}
+
+.submissions-filters {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
+  flex-wrap: wrap;
+}
+
+.submissions-table-wrapper {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.submissions-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.submissions-table thead {
+  background-color: var(--bg-secondary);
+  border-bottom: 2px solid var(--border);
+}
+
+.submissions-table th {
+  padding: var(--spacing-lg);
+  text-align: left;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.submissions-table td {
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.submissions-table tbody tr:hover {
+  background-color: var(--bg-hover);
+}
+
+.submission-status {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+}
+
+.status-accepted {
+  background-color: var(--success-50);
+  color: var(--success);
+}
+
+.status-rejected {
+  background-color: var(--danger-50);
+  color: var(--danger);
+}
+
+.status-pending {
+  background-color: var(--warning-50);
+  color: var(--warning);
+}
+
+.status-judging {
+  background-color: var(--info-50);
+  color: var(--info);
+}
+
+.submission-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.score-value {
+  font-weight: var(--font-weight-bold);
+  color: var(--primary);
+  font-size: var(--font-size-lg);
+}
+
+.score-max {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+.submission-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.action-btn {
+  padding: var(--spacing-xs) var(--spacing-md);
+  border: 1px solid var(--border);
+  background-color: transparent;
+  color: var(--primary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  transition: var(--transition);
+}
+
+.action-btn:hover {
+  background-color: var(--primary-50);
+  border-color: var(--primary);
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg);
+  border-top: 1px solid var(--border);
+}
+
+.submissions-empty {
+  text-align: center;
+  padding: var(--spacing-4xl) var(--spacing-2xl);
+  color: var(--text-secondary);
+}
+
+@media (max-width: 1024px) {
+  .student-submissions {
+    padding: var(--spacing-lg);
+  }
+}
+
+@media (max-width: 640px) {
+  .student-submissions {
+    padding: var(--spacing-md);
+  }
+
+  .submissions-header h1 {
+    font-size: var(--font-size-2xl);
+  }
+
+  .submissions-table {
+    font-size: var(--font-size-xs);
+  }
+
+  .submissions-table th,
+  .submissions-table td {
+    padding: var(--spacing-md);
+  }
+
+  .submissions-toolbar {
+    flex-direction: column;
+  }
+
+  .submission-actions {
+    flex-direction: column;
+  }
+
+  .action-btn {
+    width: 100%;
+  }
+}

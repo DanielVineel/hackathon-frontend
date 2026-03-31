@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../../api/api';
 import PublicLayout from '../../layouts/PublicLayout';
-import '../../styles/PublicHome.css';
+import '../styles/public/Home.css';
 
 export default function PublicHome() {
   const [featuredEvents, setFeaturedEvents] = useState([]);

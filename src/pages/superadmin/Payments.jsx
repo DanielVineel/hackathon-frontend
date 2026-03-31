@@ -4,6 +4,7 @@ import Pagination from "../../components/common/Pagination";
 import { paginateArray } from "../../utils/pagination";
 import API from "../../api/api";
 import "../../styles/theme.css";
+import "../styles/superadmin/Payments.css";
 
 const ITEMS_PER_PAGE = 12;
 

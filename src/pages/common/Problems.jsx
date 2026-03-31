@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import API from "../../api/api";
 import { getToken } from "../../utils/auth";
-import "../../styles/Problems.css";
+import { useGlobalLoader } from "../../hooks/useLoading";
+import "../styles/common/Problems.css";
 
 const Problems = () => {
   const [problems, setProblems] = useState([]);
@@ -9,10 +10,12 @@ const Problems = () => {
   const [error, setError] = useState(null);
   const [difficulty, setDifficulty] = useState("all");
   const token = getToken();
+  const { showLoader, hideLoader } = useGlobalLoader();
 
   const fetchProblems = async (level) => {
     try {
       setLoading(true);
+      showLoader("Loading problems...");
       setError(null);
 
       // Build query params
@@ -40,6 +43,7 @@ const Problems = () => {
       setProblems([]);
     } finally {
       setLoading(false);
+      hideLoader();
     }
   };
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import API from "../../api/api";
-import "../styles/ManagerLeaderboard.css";
+import "../styles/manager/Leaderboard.css";
 
 const ManagerLeaderboard = () => {
   const [events, setEvents] = useState([]);

@@ -5,8 +5,7 @@ import API from "../../api/api";
 import DataTable from "../../components/common/DataTable";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { CreateEvent, UpdateEvent } from "./operations";
-import "../../styles/EnhancedPages.css";
-import "./Events.css";
+import "../styles/manager/Events.css";
 
 const Events = () => {
   const navigate = useNavigate();

@@ -9,3 +9,4 @@ export { useApi } from './useApi';
 export { useFormValidation } from './useFormValidation';
 export { useModal } from './useModal';
 export { useRole } from './useRole';
+export { useLoading, useGlobalLoader, useLoader } from './useLoading';

@@ -2,10 +2,12 @@
 import React, { useEffect, useState } from "react";
 import API from "../../api/api";
 import { useTheme } from "../../context/ThemeContext";
-import "./Dashboard.css";
+import { useGlobalLoader } from "../../hooks/useLoading";
+import "../styles/superadmin/Dashboard.css";
 
 const Dashboard = () => {
   const { theme } = useTheme();
+  const { showLoader, hideLoader } = useGlobalLoader();
   const [stats, setStats] = useState({
     totalEvents: 0,
     totalUsers: 0,
@@ -31,6 +33,7 @@ const Dashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
+      showLoader("Loading dashboard...");
       
       // Fetch statistics
       const [events, students, managers, submissions] = await Promise.all([
@@ -78,6 +81,7 @@ const Dashboard = () => {
       console.error("Error fetching dashboard data:", err);
     } finally {
       setLoading(false);
+      hideLoader();
     }
   };
 

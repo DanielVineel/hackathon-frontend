@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import API from '../../api/api';
 import { Card, ChartCard } from '../../components/DashboardCard';
-import '../../styles/CalendarPage.css';
+import '../styles/student/Calendar.css';
 
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());

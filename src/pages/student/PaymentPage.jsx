@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import API from "../../api/api";
-import "./PaymentPage.css";
+import "../styles/student/PaymentPage.css";
 
 /**
  * Standalone Payment Page Component

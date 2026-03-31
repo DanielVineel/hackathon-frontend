@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API from "../../../api/api";
+import { useGlobalLoader } from "../../../hooks/useLoading";
 import "../styles/Auth.css";
 
 const ManagerForgotPassword = () => {
   const navigate = useNavigate();
+  const { showLoader, hideLoader } = useGlobalLoader();
   const [step, setStep] = useState(1); // 1: Email, 2: OTP, 3: New Password
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -60,6 +62,7 @@ const ManagerForgotPassword = () => {
       setError(errorMessage);
     } finally {
       setLoading(false);
+      hideLoader();
     }
   };
 
@@ -67,6 +70,7 @@ const ManagerForgotPassword = () => {
     setLoading(true);
     setError("");
     setSuccess("");
+    showLoader("Resending OTP...");
 
     try {
       const res = await API.post("/auth/forgot-password/manager", { email });
@@ -82,6 +86,7 @@ const ManagerForgotPassword = () => {
       setError(errorMessage);
     } finally {
       setLoading(false);
+      hideLoader();
     }
   };
 
@@ -101,6 +106,7 @@ const ManagerForgotPassword = () => {
     setLoading(true);
     setError("");
     setSuccess("");
+    showLoader("Verifying OTP...");
 
     try {
       const res = await API.post("/auth/verify-otp/manager", { email, otp });
@@ -116,6 +122,7 @@ const ManagerForgotPassword = () => {
       setError(errorMessage);
     } finally {
       setLoading(false);
+      hideLoader();
     }
   };
 
@@ -147,14 +154,10 @@ const ManagerForgotPassword = () => {
       return;
     }
 
-    if (newPassword !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
     setLoading(true);
     setError("");
     setSuccess("");
+    showLoader("Resetting password...");
 
     try {
       const res = await API.post("/auth/reset-password/manager", {
@@ -174,6 +177,7 @@ const ManagerForgotPassword = () => {
       setError(errorMessage);
     } finally {
       setLoading(false);
+      hideLoader();
     }
   };
 

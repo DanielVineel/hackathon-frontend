@@ -5,7 +5,7 @@ import { getBlutoStorage, setBlutoStorage } from "../../utils/storage";
 import { applyFilters } from "../../utils/filters";
 import { paginateArray } from "../../utils/pagination";
 import API from "../../api/api";
-import "../styles/ManagerSubmissions.css";
+import "../styles/manager/Submissions.css";
 
 const ManagerSubmissions = () => {
   const navigate = useNavigate();

@@ -5,8 +5,7 @@ import DataTable from "../../components/common/DataTable";
 import Modal from "../../components/common/Modal";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { CreateProblem, UpdateProblem } from "./operations";
-import "../../styles/EnhancedPages.css";
-import "./Problems.css";
+import "../styles/superadmin/Problems.css";
 
 const Problems = () => {
   const navigate = useNavigate();

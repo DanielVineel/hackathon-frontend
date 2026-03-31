@@ -1,0 +1,127 @@
+/**
+ * Superadmin Improvements Page Styles
+ */
+
+.admin-improvements-container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  padding: var(--spacing-2xl);
+}
+
+.improvements-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-2xl);
+  gap: var(--spacing-lg);
+}
+
+.improvements-header h1 {
+  font-size: var(--font-size-3xl);
+}
+
+.improvements-list {
+  display: grid;
+  gap: var(--spacing-lg);
+}
+
+.improvement-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+
+.improvement-card:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary);
+}
+
+.improvement-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+}
+
+.improvement-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.improvement-priority {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+}
+
+.priority-high {
+  background-color: var(--danger-50);
+  color: var(--danger);
+}
+
+.priority-medium {
+  background-color: var(--warning-50);
+  color: var(--warning);
+}
+
+.priority-low {
+  background-color: var(--info-50);
+  color: var(--info);
+}
+
+.improvement-description {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.improvement-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--border);
+}
+
+.improvement-date {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-xs);
+}
+
+@media (max-width: 1024px) {
+  .admin-improvements-container {
+    padding: var(--spacing-lg);
+  }
+
+  .improvements-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-improvements-container {
+    padding: var(--spacing-md);
+  }
+
+  .improvements-header h1 {
+    font-size: var(--font-size-2xl);
+  }
+
+  .improvement-header {
+    flex-direction: column;
+  }
+
+  .improvement-card {
+    padding: var(--spacing-md);
+  }
+}

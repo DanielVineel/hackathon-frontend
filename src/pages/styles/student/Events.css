@@ -1,0 +1,239 @@
+/**
+ * Student Events Page Styles - Clean Modern UI
+ */
+
+.student-events {
+  width: 100%;
+  background-color: var(--bg-primary);
+  padding: var(--spacing-2xl);
+  min-height: 100vh;
+}
+
+.events-header {
+  margin-bottom: var(--spacing-3xl);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg);
+}
+
+.events-header h1 {
+  font-size: var(--font-size-3xl);
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+.events-toolbar {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-2xl);
+  flex-wrap: wrap;
+}
+
+.events-toolbar input,
+.events-toolbar select {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--spacing-2xl);
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.event-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: var(--transition);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  box-shadow: var(--shadow-sm);
+  color: var(--text-primary);
+}
+
+.event-card:nth-child(2) {
+  background-color: var(--bg-secondary);
+}
+
+.event-card:nth-child(3) {
+  background-color: var(--bg-card);
+}
+
+.event-card:nth-child(4) {
+  background-color: var(--bg-secondary);
+}
+
+.event-card:nth-child(n+5) {
+  background-color: var(--bg-card);
+}
+
+.event-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 0px;
+  background: transparent;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.event-card:hover {
+  box-shadow: var(--shadow-2xl);
+  transform: translateY(-8px) scale(1.02);
+}
+
+.event-card:hover::before {
+  opacity: 0;
+}
+
+.event-card-banner {
+  width: 100%;
+  height: 200px;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56px;
+  position: relative;
+  overflow: hidden;
+}
+
+.event-card-banner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 70%, rgba(255, 255, 255, 0.08), transparent);
+}
+
+.event-card-body {
+  padding: var(--spacing-lg);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  color: white;
+}
+
+.event-card-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: white;
+  margin: 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.event-card-description {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: var(--font-size-sm);
+  flex: 1;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.event-card-meta {
+  display: flex;
+  gap: var(--spacing-md);
+  font-size: var(--font-size-xs);
+  color: rgba(255, 255, 255, 0.8);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex-wrap: wrap;
+}
+
+.event-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: rgba(0, 0, 0, 0.2);
+  gap: var(--spacing-md);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.event-status {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-md);
+  background-color: var(--success-50);
+  color: var(--success);
+  border-radius: var(--radius-full);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.event-status.upcoming {
+  background-color: var(--info-50);
+  color: var(--info);
+}
+
+.event-status.ongoing {
+  background-color: var(--warning-50);
+  color: var(--warning);
+}
+
+.events-empty {
+  text-align: center;
+  padding: var(--spacing-4xl) var(--spacing-2xl);
+  color: var(--text-secondary);
+}
+
+@media (max-width: 1024px) {
+  .student-events {
+    padding: var(--spacing-lg);
+  }
+
+  .events-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .student-events {
+    padding: var(--spacing-md);
+  }
+
+  .events-header h1 {
+    font-size: var(--font-size-2xl);
+  }
+
+  .events-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .events-toolbar {
+    flex-direction: column;
+  }
+
+  .event-card-banner {
+    height: 150px;
+    font-size: 36px;
+  }
+}

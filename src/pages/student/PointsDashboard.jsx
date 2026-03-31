@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import API from '../../api/api';
 import { Card, StatCard, ChartCard, ProgressCard, BadgeCard } from '../../components/DashboardCard';
-import '../../styles/PointsDashboard.css';
+import '../styles/student/PointsDashboard.css';
 
 export default function PointsDashboard() {
   const [points, setPoints] = useState(null);

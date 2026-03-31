@@ -5,8 +5,7 @@ import API from "../../api/api";
 import DataTable from "../../components/common/DataTable";
 import Modal from "../../components/common/Modal";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
-import "../../styles/EnhancedPages.css";
-import "./Users.css";
+import "../styles/superadmin/Users.css";
 
 const Users = () => {
   const navigate = useNavigate();

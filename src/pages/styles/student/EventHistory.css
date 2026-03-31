@@ -1,0 +1,135 @@
+/**
+ * Student Event History Styles
+ */
+
+.event-history {
+  width: 100%;
+  background-color: var(--bg-primary);
+  padding: var(--spacing-2xl);
+}
+
+.event-history-header {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.event-history-header h1 {
+  font-size: var(--font-size-3xl);
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-primary);
+}
+
+.event-history-header p {
+  color: var(--text-secondary);
+}
+
+.history-list {
+  display: grid;
+  gap: var(--spacing-lg);
+}
+
+.history-item {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  transition: var(--transition);
+}
+
+.history-item:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary);
+}
+
+.history-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-md);
+}
+
+.item-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.item-status {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+}
+
+.status-upcoming {
+  background-color: var(--info-50);
+  color: var(--info);
+}
+
+.status-ongoing {
+  background-color: var(--warning-50);
+  color: var(--warning);
+}
+
+.status-completed {
+  background-color: var(--success-50);
+  color: var(--success);
+}
+
+.item-description {
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-md);
+}
+
+.item-meta {
+  display: flex;
+  gap: var(--spacing-xl);
+  flex-wrap: wrap;
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--border);
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.history-empty {
+  text-align: center;
+  padding: var(--spacing-3xl) var(--spacing-2xl);
+  color: var(--text-secondary);
+}
+
+@media (max-width: 1024px) {
+  .event-history {
+    padding: var(--spacing-lg);
+  }
+
+  .history-item-header {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .event-history {
+    padding: var(--spacing-md);
+  }
+
+  .event-history-header h1 {
+    font-size: var(--font-size-2xl);
+  }
+
+  .history-item {
+    padding: var(--spacing-md);
+  }
+
+  .item-meta {
+    gap: var(--spacing-md);
+    flex-direction: column;
+  }
+}

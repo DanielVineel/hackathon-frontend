@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import API from "../../api/api";
-import "./EventAttemptPage.css";
+import "../styles/student/EventAttempt.css";
 
 const EventAttemptPage = () => {
   const { eventId } = useParams();
@@ -65,7 +65,7 @@ const EventAttemptPage = () => {
       try {
         const problemRes = await API.get(`/problems/event/${eventId}`);
         const problemsList = problemRes.data?.problems || [];
-        setProblems(Array.isArray(problemsList) ? problemsList : []);
+        setProblems( problemsList || []);
         
         if (problemsList.length > 0) {
           setSelectedProblem(problemsList[0]._id);

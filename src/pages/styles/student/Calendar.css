@@ -1,0 +1,201 @@
+/**
+ * Student Calendar Page Styles
+ */
+
+.calendar-container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  padding: var(--spacing-2xl);
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-2xl);
+  gap: var(--spacing-lg);
+}
+
+.calendar-header h1 {
+  font-size: var(--font-size-3xl);
+}
+
+.calendar-navigation {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.calendar-navigation button {
+  padding: var(--spacing-md) var(--spacing-lg);
+}
+
+.calendar-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-2xl);
+}
+
+.calendar-widget {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.calendar-widget-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--spacing-lg);
+  color: var(--text-primary);
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--spacing-xs);
+}
+
+.calendar-day-header {
+  text-align: center;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  padding: var(--spacing-md);
+  border-bottom: 2px solid var(--border);
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition);
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.calendar-day:hover {
+  background-color: var(--bg-hover);
+  border-color: var(--primary);
+}
+
+.calendar-day.active {
+  background: var(--gradient-primary);
+  color: white;
+  border-color: transparent;
+  font-weight: var(--font-weight-bold);
+}
+
+.calendar-day.today {
+  border: 2px solid var(--primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.calendar-day.other-month {
+  color: var(--text-muted);
+}
+
+.calendar-events {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.calendar-events h3 {
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--spacing-lg);
+  color: var(--text-primary);
+}
+
+.events-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.event-item {
+  padding: var(--spacing-md);
+  background-color: var(--bg-secondary);
+  border-left: 4px solid var(--primary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.event-item:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateX(4px);
+}
+
+.event-date {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  margin-bottom: var(--spacing-xs);
+}
+
+.event-name {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.event-type {
+  display: inline-block;
+  margin-top: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--primary-50);
+  color: var(--primary);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+}
+
+.events-empty {
+  text-align: center;
+  padding: var(--spacing-2xl);
+  color: var(--text-secondary);
+}
+
+@media (max-width: 1024px) {
+  .calendar-body {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-container {
+    padding: var(--spacing-lg);
+  }
+}
+
+@media (max-width: 640px) {
+  .calendar-container {
+    padding: var(--spacing-md);
+  }
+
+  .calendar-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .calendar-header h1 {
+    font-size: var(--font-size-2xl);
+  }
+
+  .calendar-grid {
+    grid-template-columns: repeat(7, 1fr);
+  }
+
+  .calendar-day {
+    font-size: var(--font-size-xs);
+    aspect-ratio: 1;
+  }
+
+  .calendar-day-header {
+    font-size: var(--font-size-xs);
+    padding: var(--spacing-sm);
+  }
+}

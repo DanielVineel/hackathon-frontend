@@ -4,7 +4,7 @@ import { getBlutoStorage, setBlutoStorage } from "../../utils/storage";
 import { applyFilters } from "../../utils/filters";
 import { paginateArray } from "../../utils/pagination";
 import API from "../../api/api";
-import "../styles/SuperAdminCertificates.css";
+import "../styles/superadmin/Certificates.css";
 
 const Certificates = () => {
   const [certificates, setCertificates] = useState([]);

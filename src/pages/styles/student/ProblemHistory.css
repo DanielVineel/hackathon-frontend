@@ -1,0 +1,147 @@
+/**
+ * Student Problem History Styles
+ */
+
+.problem-history {
+  width: 100%;
+  background-color: var(--bg-primary);
+  padding: var(--spacing-2xl);
+}
+
+.history-header {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.history-header h1 {
+  font-size: var(--font-size-3xl);
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-primary);
+}
+
+.history-header p {
+  color: var(--text-secondary);
+}
+
+.history-filters {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
+  flex-wrap: wrap;
+}
+
+.history-table-wrapper {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.history-table thead {
+  background-color: var(--bg-secondary);
+  border-bottom: 2px solid var(--border);
+}
+
+.history-table th {
+  padding: var(--spacing-lg);
+  text-align: left;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.history-table td {
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.history-table tbody tr:hover {
+  background-color: var(--bg-hover);
+}
+
+.status-badge {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+}
+
+.status-accepted {
+  background-color: var(--success-50);
+  color: var(--success);
+}
+
+.status-rejected {
+  background-color: var(--danger-50);
+  color: var(--danger);
+}
+
+.status-pending {
+  background-color: var(--warning-50);
+  color: var(--warning);
+}
+
+.difficulty-badge {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+}
+
+.difficulty-easy {
+  background-color: var(--success-50);
+  color: var(--success);
+}
+
+.difficulty-medium {
+  background-color: var(--warning-50);
+  color: var(--warning);
+}
+
+.difficulty-hard {
+  background-color: var(--danger-50);
+  color: var(--danger);
+}
+
+.history-empty {
+  text-align: center;
+  padding: var(--spacing-3xl) var(--spacing-2xl);
+  color: var(--text-secondary);
+}
+
+@media (max-width: 1024px) {
+  .problem-history {
+    padding: var(--spacing-lg);
+  }
+}
+
+@media (max-width: 640px) {
+  .problem-history {
+    padding: var(--spacing-md);
+  }
+
+  .history-header h1 {
+    font-size: var(--font-size-2xl);
+  }
+
+  .history-table {
+    font-size: var(--font-size-xs);
+  }
+
+  .history-table th,
+  .history-table td {
+    padding: var(--spacing-md);
+  }
+
+  .history-filters {
+    flex-direction: column;
+  }
+}

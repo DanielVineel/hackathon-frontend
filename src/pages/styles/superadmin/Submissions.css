@@ -1,0 +1,141 @@
+/**
+ * Superadmin Submissions Page Styles
+ */
+
+.admin-submissions-container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  padding: var(--spacing-2xl);
+}
+
+.submissions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-2xl);
+  gap: var(--spacing-lg);
+}
+
+.submissions-header h1 {
+  font-size: var(--font-size-3xl);
+}
+
+.submissions-filters {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
+  flex-wrap: wrap;
+}
+
+.submissions-list {
+  display: grid;
+  gap: var(--spacing-lg);
+}
+
+.submission-item {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  transition: var(--transition);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+
+.submission-item:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary);
+}
+
+.submission-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.submission-title {
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.submission-meta {
+  display: flex;
+  gap: var(--spacing-xl);
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  flex-wrap: wrap;
+}
+
+.submission-status {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+}
+
+.status-pending {
+  background-color: var(--warning-50);
+  color: var(--warning);
+}
+
+.status-approved {
+  background-color: var(--success-50);
+  color: var(--success);
+}
+
+.status-rejected {
+  background-color: var(--danger-50);
+  color: var(--danger);
+}
+
+.submission-actions {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.submission-actions button {
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  min-width: 100px;
+}
+
+@media (max-width: 1024px) {
+  .admin-submissions-container {
+    padding: var(--spacing-lg);
+  }
+
+  .submissions-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-submissions-container {
+    padding: var(--spacing-md);
+  }
+
+  .submissions-header h1 {
+    font-size: var(--font-size-2xl);
+  }
+
+  .submission-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .submission-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .submission-actions button {
+    width: 100%;
+  }
+}

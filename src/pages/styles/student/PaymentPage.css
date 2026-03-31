@@ -1,0 +1,202 @@
+/**
+ * Student Payment Page Styles
+ */
+
+.payment-page {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  padding: var(--spacing-2xl);
+}
+
+.payment-header {
+  text-align: center;
+  margin-bottom: var(--spacing-3xl);
+}
+
+.payment-header h1 {
+  font-size: var(--font-size-3xl);
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-primary);
+}
+
+.payment-header p {
+  color: var(--text-secondary);
+}
+
+.payment-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.payment-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-2xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.payment-amount {
+  text-align: center;
+  padding: var(--spacing-xl);
+  background: linear-gradient(135deg, var(--primary-50), var(--secondary-50));
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-xl);
+}
+
+.amount-label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.amount-value {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--primary);
+}
+
+.payment-details {
+  margin-bottom: var(--spacing-xl);
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--spacing-md) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-item:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  color: var(--text-secondary);
+}
+
+.detail-value {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.payment-form-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.payment-form-group label {
+  display: block;
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-primary);
+}
+
+.payment-form-group input,
+.payment-form-group select {
+  width: 100%;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: var(--font-size-base);
+}
+
+.payment-form-group input:focus,
+.payment-form-group select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-50);
+}
+
+.payment-methods {
+  margin-bottom: var(--spacing-xl);
+}
+
+.payment-methods h3 {
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--spacing-md);
+  color: var(--text-primary);
+}
+
+.method-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.method-option {
+  padding: var(--spacing-lg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.method-option:hover {
+  border-color: var(--primary);
+  background-color: var(--primary-50);
+}
+
+.method-option.selected {
+  border-color: var(--primary);
+  background-color: var(--primary-50);
+}
+
+.payment-button {
+  width: 100%;
+  padding: var(--spacing-lg);
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  transition: var(--transition);
+  margin-top: var(--spacing-lg);
+}
+
+.payment-button:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-2px);
+}
+
+.payment-security {
+  text-align: center;
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--border);
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+}
+
+@media (max-width: 1024px) {
+  .payment-page {
+    padding: var(--spacing-lg);
+  }
+}
+
+@media (max-width: 640px) {
+  .payment-page {
+    padding: var(--spacing-md);
+  }
+
+  .payment-header h1 {
+    font-size: var(--font-size-2xl);
+  }
+
+  .payment-card {
+    padding: var(--spacing-lg);
+  }
+
+  .amount-value {
+    font-size: var(--font-size-3xl);
+  }
+
+  .method-options {
+    grid-template-columns: 1fr;
+  }
+}

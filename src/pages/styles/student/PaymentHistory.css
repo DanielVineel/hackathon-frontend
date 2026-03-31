@@ -1,0 +1,147 @@
+/**
+ * Student Payment History Styles
+ */
+
+.payment-history {
+  width: 100%;
+  background-color: var(--bg-primary);
+  padding: var(--spacing-2xl);
+}
+
+.payment-history-header {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.payment-history-header h1 {
+  font-size: var(--font-size-3xl);
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-primary);
+}
+
+.payment-history-header p {
+  color: var(--text-secondary);
+}
+
+.payment-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-2xl);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.summary-card {
+  background: linear-gradient(135deg, var(--primary-50), var(--secondary-50));
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.summary-label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.summary-value {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--primary);
+}
+
+.history-table-wrapper {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.history-table thead {
+  background-color: var(--bg-secondary);
+  border-bottom: 2px solid var(--border);
+}
+
+.history-table th {
+  padding: var(--spacing-lg);
+  text-align: left;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.history-table td {
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.history-table tbody tr:hover {
+  background-color: var(--bg-hover);
+}
+
+.payment-status {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+}
+
+.status-completed {
+  background-color: var(--success-50);
+  color: var(--success);
+}
+
+.status-pending {
+  background-color: var(--warning-50);
+  color: var(--warning);
+}
+
+.status-failed {
+  background-color: var(--danger-50);
+  color: var(--danger);
+}
+
+.history-empty {
+  text-align: center;
+  padding: var(--spacing-3xl) var(--spacing-2xl);
+  color: var(--text-secondary);
+}
+
+@media (max-width: 1024px) {
+  .payment-history {
+    padding: var(--spacing-lg);
+  }
+
+  .payment-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .payment-history {
+    padding: var(--spacing-md);
+  }
+
+  .payment-history-header h1 {
+    font-size: var(--font-size-2xl);
+  }
+
+  .payment-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .history-table {
+    font-size: var(--font-size-xs);
+  }
+
+  .history-table th,
+  .history-table td {
+    padding: var(--spacing-md);
+  }
+}

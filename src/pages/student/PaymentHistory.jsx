@@ -5,7 +5,7 @@ import { getBlutoStorage, setBlutoStorage } from "../../utils/storage";
 import { applyFilters } from "../../utils/filters";
 import { paginateArray } from "../../utils/pagination";
 import API from "../../api/api";
-import "../styles/StudentPaymentHistory.css";
+import "../styles/student/PaymentHistory.css";
 
 const PaymentHistory = () => {
   const [payments, setPayments] = useState([]);

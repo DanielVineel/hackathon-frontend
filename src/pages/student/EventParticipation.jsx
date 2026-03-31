@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../../api/api";
 import { getUserData } from "../../utils/auth";
-import "../../styles/EventParticipation.css";
+import "../styles/student/EventParticipation.css";
 
 const EventParticipation = () => {
   const { eventId } = useParams();

@@ -5,8 +5,7 @@ import API from "../../api/api";
 import DataTable from "../../components/common/DataTable";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { CreateProblem, UpdateProblem } from "./operations";
-import "../../styles/EnhancedPages.css";
-import "./Problems.css";
+import "../styles/manager/Problems.css";
 
 const Problems = () => {
   const navigate = useNavigate();

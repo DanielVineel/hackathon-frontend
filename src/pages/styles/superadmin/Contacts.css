@@ -1,0 +1,148 @@
+/**
+ * Superadmin Contacts Page Styles
+ */
+
+.admin-contacts-container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  padding: var(--spacing-2xl);
+}
+
+.contacts-header {
+  margin-bottom: var(--spacing-3xl);
+}
+
+.contacts-header h1 {
+  font-size: var(--font-size-3xl);
+  margin-bottom: var(--spacing-sm);
+}
+
+.contacts-header p {
+  color: var(--text-secondary);
+}
+
+.contacts-filters {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
+  flex-wrap: wrap;
+}
+
+.contacts-list {
+  display: grid;
+  gap: var(--spacing-lg);
+}
+
+.contact-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-lg);
+  transition: var(--transition);
+}
+
+.contact-card:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary);
+}
+
+.contact-info {
+  flex: 1;
+}
+
+.contact-name {
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  font-size: var(--font-size-base);
+  margin-bottom: var(--spacing-xs);
+}
+
+.contact-email {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.contact-subject {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-xs);
+}
+
+.contact-status {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+}
+
+.status-new {
+  background-color: var(--info-50);
+  color: var(--info);
+}
+
+.status-replied {
+  background-color: var(--success-50);
+  color: var(--success);
+}
+
+.status-resolved {
+  background-color: var(--success-50);
+  color: var(--success);
+}
+
+.contact-actions {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.contact-actions button {
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: var(--font-size-sm);
+}
+
+.contacts-empty {
+  text-align: center;
+  padding: var(--spacing-4xl);
+  color: var(--text-secondary);
+}
+
+@media (max-width: 1024px) {
+  .admin-contacts-container {
+    padding: var(--spacing-lg);
+  }
+
+  .contact-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-contacts-container {
+    padding: var(--spacing-md);
+  }
+
+  .contacts-header h1 {
+    font-size: var(--font-size-2xl);
+  }
+
+  .contact-card {
+    padding: var(--spacing-md);
+  }
+
+  .contact-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .contact-actions button {
+    width: 100%;
+  }
+}

@@ -2,10 +2,12 @@
 import React, { useEffect, useState } from "react";
 import API from "../../api/api";
 import { useTheme } from "../../context/ThemeContext";
-import "./Dashboard.css";
+import { useGlobalLoader } from "../../hooks/useLoading";
+import "../styles/manager/Dashboard.css";
 
 const ManagerDashboard = () => {
   const { theme } = useTheme();
+  const { showLoader, hideLoader } = useGlobalLoader();
   const [manager, setManager] = useState(null);
   const [events, setEvents] = useState([]);
   const [stats, setStats] = useState({
@@ -34,6 +36,7 @@ const ManagerDashboard = () => {
   const fetchManagerData = async () => {
     try {
       setLoading(true);
+      showLoader("Loading dashboard...");
       const [managerRes, eventsRes] = await Promise.all([
         API.get("/managers/profile"),
         API.get("/events?manager=true")
@@ -59,6 +62,7 @@ const ManagerDashboard = () => {
       console.error("Error fetching manager data:", err);
     } finally {
       setLoading(false);
+      hideLoader();
     }
   };
 

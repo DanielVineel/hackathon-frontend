@@ -1,0 +1,228 @@
+/**
+ * Student Problems Page Styles - Clean Modern UI
+ */
+
+.student-problems {
+  width: 100%;
+  background-color: var(--bg-primary);
+  padding: var(--spacing-2xl);
+  min-height: 100vh;
+}
+
+.problems-header {
+  margin-bottom: var(--spacing-3xl);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+}
+
+.problems-header h1 {
+  font-size: var(--font-size-3xl);
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+.problems-toolbar {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-2xl);
+  flex-wrap: wrap;
+}
+
+.problems-toolbar input,
+.problems-toolbar select {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.problems-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--spacing-xl);
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.problem-row {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  transition: var(--transition);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-xs);
+  color: var(--text-primary);
+}
+
+.problem-row:nth-child(2) {
+  background-color: var(--bg-secondary);
+}
+
+.problem-row:nth-child(3) {
+  background-color: var(--bg-card);
+}
+
+.problem-row:nth-child(4) {
+  background-color: var(--bg-secondary);
+}
+
+.problem-row:nth-child(n+5) {
+  background-color: var(--bg-card);
+}
+
+.problem-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.03), rgba(14, 165, 233, 0.03));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.problem-row:hover {
+  box-shadow: var(--shadow-2xl);
+  transform: translateY(-8px) scale(1.02);
+}
+
+.problem-row:hover::before {
+  opacity: 1;
+}
+
+.problem-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--spacing-lg);
+  z-index: 1;
+}
+
+.problem-info {
+  flex: 1;
+}
+
+.problem-name {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.problem-description {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-sm);
+  line-height: 1.5;
+}
+
+.problem-meta {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.meta-tag {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+.difficulty-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.difficulty-easy {
+  background-color: var(--success-50);
+  color: var(--success);
+}
+
+.difficulty-medium {
+  background-color: var(--warning-50);
+  color: var(--warning);
+}
+
+.difficulty-hard {
+  background-color: var(--danger-50);
+  color: var(--danger);
+}
+
+.solve-button {
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.solve-button:hover {
+  background-color: var(--primary-dark);
+}
+
+.problems-empty {
+  text-align: center;
+  padding: var(--spacing-4xl) var(--spacing-2xl);
+  color: var(--text-secondary);
+}
+
+@media (max-width: 1024px) {
+  .student-problems {
+    padding: var(--spacing-lg);
+  }
+}
+
+@media (max-width: 640px) {
+  .student-problems {
+    padding: var(--spacing-md);
+  }
+
+  .problems-header h1 {
+    font-size: var(--font-size-2xl);
+  }
+
+  .problem-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .solve-button {
+    width: 100%;
+  }
+
+  .problems-toolbar {
+    flex-direction: column;
+  }
+}

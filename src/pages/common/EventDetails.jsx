@@ -2,13 +2,15 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../../api/api";
 import { getToken, getUserData } from "../../utils/auth";
-import "../styles/EventDetails.css";
+import { useGlobalLoader } from "../../hooks/useLoading";
+import "../styles/common/EventDetails.css";
 
 const EventDetails = () => {
   const { eventId } = useParams();
   const navigate = useNavigate();
   const user = getUserData();
   const token = getToken();
+  const { showLoader, hideLoader } = useGlobalLoader();
 
   const [event, setEvent] = useState(null);
   const [isRegistered, setIsRegistered] = useState(false);
@@ -25,6 +27,7 @@ const EventDetails = () => {
   const fetchEventDetails = async () => {
     try {
       setLoading(true);
+      showLoader("Loading event details...");
       const res = await API.get(`/events/${eventId}`);
       setEvent(res.data.data || res.data);
 
@@ -43,6 +46,7 @@ const EventDetails = () => {
       console.log(err);
     } finally {
       setLoading(false);
+      hideLoader();
     }
   };
 

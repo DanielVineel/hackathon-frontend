@@ -1,20 +1,29 @@
 import { useEffect, useState } from "react";
 import API from "../../api/api";
 import { getToken } from "../../utils/auth";
+import { useGlobalLoader } from "../../hooks/useLoading";
+import "../styles/common/Events.css";
 
 const Events = () => {
   const [events, setEvents] = useState([]);
   const [status, setStatus] = useState("all");
+  const [loading, setLoading] = useState(false);
   const token = getToken();
+  const { showLoader, hideLoader } = useGlobalLoader();
 
   const fetchEvents = async (selectedStatus) => {
     const data={"status":status}
     try {
+      setLoading(true);
+      showLoader("Loading events...");
       const res=await API.get("/events", {params: data})
 
       setEvents(res.data);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
+      hideLoader();
     }
   };
 

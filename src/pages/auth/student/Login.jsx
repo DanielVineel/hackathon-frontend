@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { saveAuth, USER_TYPES } from "../../../utils/auth";
 import API from "../../../api/api";
+import { useGlobalLoader } from "../../../hooks/useLoading";
 import "../styles/Auth.css";
 
 const StudentLogin = () => {
   const navigate = useNavigate();
+  const { showLoader, hideLoader } = useGlobalLoader();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -45,6 +47,7 @@ const StudentLogin = () => {
 
     setLoading(true);
     setError("");
+    showLoader("Logging in...");
     
     try {
       const res = await API.post("/auth/login/student", formData);
@@ -76,6 +79,7 @@ const StudentLogin = () => {
       console.error("Login error:", err);
     } finally {
       setLoading(false);
+      hideLoader();
     }
   };
 

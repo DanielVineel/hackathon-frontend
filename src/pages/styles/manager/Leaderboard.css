@@ -1,0 +1,326 @@
+/**
+ * Manager Leaderboard Styles - Clean Modern UI
+ */
+
+.manager-leaderboard {
+  width: 100%;
+  background-color: var(--bg-primary);
+  padding: var(--spacing-2xl);
+  min-height: 100vh;
+}
+
+.leaderboard-header {
+  margin-bottom: var(--spacing-3xl);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+}
+
+.leaderboard-header h1 {
+  font-size: var(--font-size-3xl);
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+.leaderboard-header p {
+  color: var(--text-secondary);
+  all: unset;
+}
+
+.leaderboard-filters {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-2xl);
+  flex-wrap: wrap;
+}
+
+.leaderboard-filters select {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.leaderboard-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  animation: fadeIn 0.3s ease-in;
+}
+
+.rank-entry {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.rank-entry::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.03), rgba(14, 165, 233, 0.03));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.rank-entry:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-50);
+  transform: translateX(4px);
+}
+
+.rank-entry:hover::before {
+  opacity: 1;
+}
+
+.rank-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.rank-badge.top1 {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+.rank-badge.top2 {
+  background: linear-gradient(135deg, #C0C0C0, #A9A9A9);
+  color: white;
+}
+
+.rank-badge.top3 {
+  background: linear-gradient(135deg, #CD7F32, #8B4513);
+  color: white;
+}
+
+.entry-info {
+  flex: 1;
+  min-width: 0;
+  z-index: 1;
+}
+
+.entry-name {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.entry-role {
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+}
+
+.entry-stats {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-md);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.entry-score {
+  background: linear-gradient(135deg, var(--primary-50), var(--secondary-50));
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  text-align: center;
+  min-width: 100px;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.score-label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  display: block;
+  margin-bottom: var(--spacing-xs);
+}
+
+.score-value {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--primary);
+}
+
+.leaderboard-header h1 {
+  font-size: var(--font-size-3xl);
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-primary);
+}
+
+.leaderboard-header p {
+  color: var(--text-secondary);
+}
+
+.leaderboard-filters {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
+  flex-wrap: wrap;
+}
+
+.leaderboard-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.rank-entry {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  transition: var(--transition);
+}
+
+.rank-entry:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary);
+}
+
+.rank-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.rank-badge.top1 {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: white;
+}
+
+.rank-badge.top2 {
+  background: linear-gradient(135deg, #C0C0C0, #A9A9A9);
+  color: white;
+}
+
+.rank-badge.top3 {
+  background: linear-gradient(135deg, #CD7F32, #8B4513);
+  color: white;
+}
+
+.entry-info {
+  flex: 1;
+}
+
+.entry-name {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.entry-role {
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+}
+
+.entry-stats {
+  display: flex;
+  gap: var(--spacing-xl);
+  margin-top: var(--spacing-md);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.entry-score {
+  background: linear-gradient(135deg, var(--primary-50), var(--secondary-50));
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  text-align: center;
+  min-width: 100px;
+}
+
+.score-label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  display: block;
+}
+
+.score-value {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--primary);
+}
+
+.leaderboard-empty {
+  text-align: center;
+  padding: var(--spacing-4xl) var(--spacing-2xl);
+  color: var(--text-secondary);
+}
+
+@media (max-width: 1024px) {
+  .manager-leaderboard {
+    padding: var(--spacing-lg);
+  }
+}
+
+@media (max-width: 640px) {
+  .manager-leaderboard {
+    padding: var(--spacing-md);
+  }
+
+  .leaderboard-header h1 {
+    font-size: var(--font-size-2xl);
+  }
+
+  .rank-entry {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .entry-stats {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .leaderboard-filters {
+    flex-direction: column;
+  }
+}

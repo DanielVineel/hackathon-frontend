@@ -5,7 +5,7 @@ import { getBlutoStorage, setBlutoStorage } from "../../utils/storage";
 import { applyFilters } from "../../utils/filters";
 import { paginateArray } from "../../utils/pagination";
 import API from "../../api/api";
-import "../styles/StudentEventHistory.css";
+import "../styles/student/EventHistory.css";
 
 const EventHistory = () => {
   const [history, setHistory] = useState([]);

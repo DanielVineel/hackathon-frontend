@@ -1,0 +1,224 @@
+/**
+ * Manager Submissions Page Styles
+ */
+
+.manager-submissions {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  padding: var(--spacing-2xl);
+}
+
+.submissions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-2xl);
+  gap: var(--spacing-lg);
+}
+
+.submissions-header h1 {
+  font-size: var(--font-size-3xl);
+}
+
+.submissions-filters {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+.filter-group label {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.filter-group select {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-card);
+  min-width: 150px;
+}
+
+.submissions-list {
+  display: grid;
+  gap: var(--spacing-2xl);
+}
+
+.submission-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+
+.submission-card:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary);
+}
+
+.submission-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-lg);
+  gap: var(--spacing-lg);
+}
+
+.submission-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.submission-status {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+}
+
+.status-submitted {
+  background-color: var(--info-50);
+  color: var(--info);
+}
+
+.status-reviewing {
+  background-color: var(--warning-50);
+  color: var(--warning);
+}
+
+.status-approved {
+  background-color: var(--success-50);
+  color: var(--success);
+}
+
+.status-rejected {
+  background-color: var(--danger-50);
+  color: var(--danger);
+}
+
+.submission-meta {
+  display: flex;
+  gap: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--border);
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.meta-label {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  font-weight: var(--font-weight-semibold);
+}
+
+.meta-value {
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.submission-details {
+  margin-bottom: var(--spacing-lg);
+}
+
+.details-label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.details-content {
+  background-color: var(--bg-secondary);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.submission-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: flex-end;
+}
+
+.submission-actions button {
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: var(--font-size-sm);
+}
+
+@media (max-width: 1024px) {
+  .manager-submissions {
+    padding: var(--spacing-lg);
+  }
+
+  .submissions-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .submission-header {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .manager-submissions {
+    padding: var(--spacing-md);
+  }
+
+  .submissions-header h1 {
+    font-size: var(--font-size-2xl);
+  }
+
+  .submissions-filters {
+    flex-direction: column;
+  }
+
+  .filter-group {
+    width: 100%;
+  }
+
+  .filter-group select {
+    width: 100%;
+  }
+
+  .submission-card {
+    padding: var(--spacing-lg);
+  }
+
+  .submission-meta {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .submission-actions {
+    flex-wrap: wrap;
+  }
+
+  .submission-actions button {
+    flex: 1;
+    min-width: 120px;
+  }
+}

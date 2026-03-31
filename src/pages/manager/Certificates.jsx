@@ -5,7 +5,7 @@ import { getBlutoStorage, setBlutoStorage } from "../../utils/storage";
 import { applyFilters } from "../../utils/filters";
 import { paginateArray } from "../../utils/pagination";
 import API from "../../api/api";
-import "../styles/ManagerCertificates.css";
+import "../styles/manager/Certificates.css";
 
 const ManagerCertificates = () => {
   const [events, setEvents] = useState([]);

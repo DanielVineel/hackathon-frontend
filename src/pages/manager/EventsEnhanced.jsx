@@ -18,7 +18,7 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
 import EmptyState from '../../components/common/EmptyState';
 import { useFilter, usePagination, useApi, useFormValidation } from '../../hooks';
 import { eventsApi } from '../../api/api-service';
-import '../../styles/ManagerEventsEnhanced.css';
+import '../styles/manager/EventsEnhanced.css';
 
 const ManagerEvents = () => {
   // State management

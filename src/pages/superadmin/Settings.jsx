@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import API from "../../api/api";
 import { useTheme } from "../../context/ThemeContext";
 import "../../styles/theme.css";
+import "../styles/superadmin/Settings.css";
 
 const Settings = () => {
   const { theme } = useTheme();

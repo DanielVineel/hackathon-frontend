@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import API from "../../api/api";
 import "../../styles/theme.css";
+import "../styles/superadmin/Contacts.css";
 
 const Contacts = () => {
   const [contacts, setContacts] = useState([]);

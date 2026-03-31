@@ -1,5 +1,5 @@
 import React from 'react';
-import '../../styles/PublicAbout.css';
+import '../styles/public/About.css';
 import PublicLayout from '../../layouts/PublicLayout';
 
 export default function PublicAbout() {

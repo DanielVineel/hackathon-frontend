@@ -6,7 +6,7 @@ import { getBlutoStorage, setBlutoStorage } from "../../utils/storage";
 import { applyFilters } from "../../utils/filters";
 import { paginateArray } from "../../utils/pagination";
 import API from "../../api/api";
-import "../../styles/StudentEvents.css";
+import "../styles/student/Events.css";
 
 /**
  * StudentEvents Component

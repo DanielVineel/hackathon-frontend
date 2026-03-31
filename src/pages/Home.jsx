@@ -1,7 +1,7 @@
 // src/pages/Home.jsx
 import React from "react";
 import { Link } from "react-router-dom";
-import "./Home.css";
+import "./styles/public/Home.css";
 location.href = location.origin + "/home";
 const Home = () => {
   return (

@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API from "../../../api/api";
+import { useGlobalLoader } from "../../../hooks/useLoading";
 import "../styles/Auth.css";
 
 const StudentForgotPassword = () => {
   const navigate = useNavigate();
+  const { showLoader, hideLoader } = useGlobalLoader();
   const [step, setStep] = useState(1); // 1: Email, 2: OTP, 3: New Password
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -60,6 +62,7 @@ const StudentForgotPassword = () => {
       setError(errorMessage);
     } finally {
       setLoading(false);
+      hideLoader();
     }
   };
 
@@ -67,6 +70,7 @@ const StudentForgotPassword = () => {
     setLoading(true);
     setError("");
     setSuccess("");
+    showLoader("Resending OTP...");
 
     try {
       const res = await API.post("/auth/forgot-password/student", { email });
@@ -82,6 +86,7 @@ const StudentForgotPassword = () => {
       setError(errorMessage);
     } finally {
       setLoading(false);
+      hideLoader();
     }
   };
 
@@ -101,6 +106,7 @@ const StudentForgotPassword = () => {
     setLoading(true);
     setError("");
     setSuccess("");
+    showLoader("Verifying OTP...");
 
     try {
       const res = await API.post("/auth/verify-otp/student", { email, otp });
@@ -147,14 +153,10 @@ const StudentForgotPassword = () => {
       return;
     }
 
-    if (newPassword !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
     setLoading(true);
     setError("");
     setSuccess("");
+    showLoader("Resetting password...");
 
     try {
       const res = await API.post("/auth/reset-password/student", {
@@ -174,10 +176,9 @@ const StudentForgotPassword = () => {
       setError(errorMessage);
     } finally {
       setLoading(false);
+      hideLoader();
     }
   };
-
-  return (
     <div className="auth-container">
       <div className="auth-card">
         {/* Header */}

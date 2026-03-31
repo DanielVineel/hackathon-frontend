@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../../api/api";
 import Modal from "../../components/common/Modal";
-import "./EventDetailsPage.css";
+import "../styles/student/EventDetailsPage.css";
 
 const EventDetailsPage = () => {
   const { eventId } = useParams();

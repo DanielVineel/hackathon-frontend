@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API from "../../../api/api";
+import { useGlobalLoader } from "../../../hooks/useLoading";
 import "../styles/Auth.css";
 
 const SuperAdminForgotPassword = () => {
   const navigate = useNavigate();
+  const { showLoader, hideLoader } = useGlobalLoader();
   const [step, setStep] = useState(1); // 1: Email, 2: OTP, 3: New Password
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");

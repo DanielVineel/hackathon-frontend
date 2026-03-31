@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../../api/api';
-import '../../styles/PublicEvents.css';
+import '../styles/public/Events.css';
 import PublicLayout from '../../layouts/PublicLayout';
 
 export default function PublicEvents() {

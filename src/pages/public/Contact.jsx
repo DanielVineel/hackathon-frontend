@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import API from '../../api/api';
-import '../../styles/PublicContact.css';
+import '../styles/public/Contact.css';
 import PublicLayout from '../../layouts/PublicLayout';
 
 export default function PublicContact() {

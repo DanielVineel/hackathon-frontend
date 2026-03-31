@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import API from "../../api/api";
 import "../../styles/theme.css";
+import "../styles/superadmin/Improvements.css";
 
 const Improvements = () => {
   const [improvements, setImprovements] = useState([]);

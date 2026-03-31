@@ -3,8 +3,7 @@ import React, { useEffect, useState } from "react";
 import API from "../../api/api";
 import DataTable from "../../components/common/DataTable";
 import Modal from "../../components/common/Modal";
-import "../../styles/EnhancedPages.css";
-import "./Submissions.css";
+import "../styles/superadmin/Submissions.css";
 
 const Submissions = () => {
   const [submissions, setSubmissions] = useState([]);

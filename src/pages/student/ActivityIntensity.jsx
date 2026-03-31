@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import API from '../../api/api';
 import { Card, StatCard, ChartCard, ProgressCard, BadgeCard } from '../../components/DashboardCard';
-import '../../styles/ActivityIntensityDashboard.css';
+import '../styles/student/ActivityIntensity.css';
 
 export default function ActivityIntensityDashboard() {
   const [intensity, setIntensity] = useState(null);

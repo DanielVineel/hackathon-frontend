@@ -7,7 +7,6 @@ import { useApi } from "../../hooks/useApi";
 import { useFilter } from "../../hooks/useFilter";
 import { usePagination } from "../../hooks/usePagination";
 import API from "../../api/api";
-import "../../styles/EnhancedPages.css";
 
 /**
  * ManagerRegistrations Component

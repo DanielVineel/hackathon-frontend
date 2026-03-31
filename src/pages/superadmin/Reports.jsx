@@ -1,6 +1,7 @@
 import  { useState, useEffect } from "react";
 import API from "../../api/api";
 import "../../styles/theme.css";
+import "../styles/superadmin/Reports.css";
 
 const Reports = () => {
   const [reports, setReports] = useState([]);

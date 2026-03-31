@@ -4,7 +4,7 @@ import DataTable from "../../components/common/DataTable";
 import { useApi } from "../../hooks/useApi";
 import { useFilter } from "../../hooks/useFilter";
 import { usePagination } from "../../hooks/usePagination";
-import "../../styles/EnhancedPages.css";
+import "../styles/student/Submissions.css";
 
 const StudentSubmissions = () => {
   const navigate = useNavigate();

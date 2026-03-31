@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { saveAuth, USER_TYPES } from "../../../utils/auth";
 import API from "../../../api/api";
+import { useGlobalLoader } from "../../../hooks/useLoading";
 import "../styles/Auth.css";
 
 const SuperAdminSignup = () => {
   const navigate = useNavigate();
+  const { showLoader, hideLoader } = useGlobalLoader();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -92,6 +94,7 @@ const SuperAdminSignup = () => {
 
     setLoading(true);
     setError("");
+    showLoader("Creating account...");
 
     try {
       const signupData = { ...formData };
@@ -125,6 +128,7 @@ const SuperAdminSignup = () => {
       console.error("Signup error:", err);
     } finally {
       setLoading(false);
+      hideLoader();
     }
   };
 
