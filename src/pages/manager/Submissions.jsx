@@ -46,7 +46,7 @@ const ManagerSubmissions = () => {
     try {
       const [submissionsRes, eventsRes] = await Promise.all([
         API.get("/manager/submissions").catch(() => ({ data: { data: [] } })),
-        API.get("/manager/events").catch(() => ({ data: { data: [] } })),
+        API.get("/manager/events/created").catch(() => ({ data: { data: [] } })),
       ]);
       setSubmissions(submissionsRes.data?.data || []);
       setEvents(eventsRes.data?.data || []);

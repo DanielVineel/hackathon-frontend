@@ -56,7 +56,7 @@ const StudentCodeEditor = () => {
 
   const fetchProblem = async () => {
     try {
-      let endpoint = `/student/problem/${problemId}`;
+      let endpoint = `/problems/${problemId}`;
       
       if (type === "event" || type === "contest") {
         endpoint = `/student/event/${eventId}/problem/${problemId}`;

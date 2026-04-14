@@ -46,17 +46,11 @@ const StudentProfile = () => {
 
     try {
       setLoading(true);
-      await API.post("/student/change-password", {
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword,
-      });
-      alert("Password changed successfully!");
+      // NOTE: /student/change-password endpoint does not exist in backend
+      // This feature needs backend implementation or the endpoint path needs to be verified
+      // For now, showing placeholder alert
+      alert("Password change feature is not yet available. Please contact support.");
       setShowPasswordModal(false);
-      setPasswordData({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
     } catch (err) {
       alert(err.response?.data?.message || "Error changing password");
     } finally {

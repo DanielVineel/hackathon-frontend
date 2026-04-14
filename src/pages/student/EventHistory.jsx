@@ -38,7 +38,7 @@ const EventHistory = () => {
   const fetchHistory = async () => {
     try {
       setLoading(true);
-      const res = await API.get("/student/events/history");
+      const res = await API.get("/student/myEvents");
       setHistory(res.data?.history || res.data?.data || []);
       setError(null);
     } catch (err) {

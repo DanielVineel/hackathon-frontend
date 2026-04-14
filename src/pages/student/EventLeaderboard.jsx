@@ -14,7 +14,7 @@ const EventLeaderboard = () => {
 
   const fetchLeaderboard = async () => {
     try {
-      const res = await API.get(`/student/events/${eventId}/leaderboard`);
+      const res = await API.get(`/student/event/${eventId}/leaderboard`);
       setLeaderboard(res.data?.data || []);
       // Find current user's rank
       const userRank = res.data?.data?.findIndex((entry) => entry.isCurrentUser);

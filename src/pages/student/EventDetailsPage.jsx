@@ -94,7 +94,7 @@ const EventDetailsPage = () => {
       setPaymentLoading(true);
       
       // Process payment through backend
-      const res = await API.post(`/payment/process`, {
+      const res = await API.post(`/payments/create`, {
         eventId,
         amount: event.fee,
         paymentMethod: "card",

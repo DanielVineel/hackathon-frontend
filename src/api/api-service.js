@@ -141,7 +141,7 @@ export const eventsApi = {
   getManagerEvents: async (filters = {}) => {
     try {
       const params = buildParams(filters);
-      return await API.get('/manager/events', { params });
+      return await API.get('/manager/events/created', { params });
     } catch (error) {
       throw error.response?.data || error;
     }
@@ -301,6 +301,51 @@ export const submissionsApi = {
   trackPasteAttempt: async (submissionId) => {
     try {
       return await API.post(`/submissions/problem-submissions/${submissionId}/paste-attempt`);
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Run code (for code editor / sandbox)
+  run: async (data) => {
+    try {
+      return await API.post('/submissions/run', data);
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Run tests for events
+  runEventTests: async (data) => {
+    try {
+      return await API.post('/submissions/event/run', data);
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Submit problem in event
+  submitEventProblem: async (data) => {
+    try {
+      return await API.post('/submissions/event/submit', data);
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Practice mode submission
+  submitPractice: async (data) => {
+    try {
+      return await API.post('/submissions/practice/submit', data);
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Sandbox execution
+  sandboxRun: async (data) => {
+    try {
+      return await API.post('/submissions/sandbox/run', data);
     } catch (error) {
       throw error.response?.data || error;
     }
@@ -754,6 +799,228 @@ export const activityLogApi = {
   }
 };
 
+// ==================== STUDENT API ====================
+export const studentApi = {
+  // Get student profile
+  getProfile: async () => {
+    try {
+      return await API.get('/student/profile');
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Update student profile
+  updateProfile: async (data) => {
+    try {
+      return await API.put('/student/profile', data);
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Get my events
+  getMyEvents: async () => {
+    try {
+      return await API.get('/student/myEvents');
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Get specific event detail
+  getEvent: async (eventId) => {
+    try {
+      return await API.get(`/student/event/${eventId}`);
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Get event timer
+  getEventTimer: async (eventId) => {
+    try {
+      return await API.get(`/student/event/${eventId}/timer`);
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Get event leaderboard
+  getEventLeaderboard: async (eventId) => {
+    try {
+      return await API.get(`/student/event/${eventId}/leaderboard`);
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Get problem in event context
+  getEventProblem: async (eventId, problemId) => {
+    try {
+      return await API.get(`/student/event/${eventId}/problem/${problemId}`);
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Get problems for an event
+  getEventProblems: async (eventId) => {
+    try {
+      return await API.get(`/student/event/${eventId}/problems`);
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Get practice problem
+  getPracticeProblem: async (problemId) => {
+    try {
+      return await API.get(`/student/practice/problem/${problemId}`);
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Get single problem
+  getProblem: async (problemId) => {
+    try {
+      return await API.get(`/student/problem/${problemId}`);
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Register for event
+  registerForEvent: async (eventId) => {
+    try {
+      return await API.post(`/student/event/register/${eventId}`);
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Start event
+  startEvent: async (eventId) => {
+    try {
+      return await API.post(`/student/event/start/${eventId}`);
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // End event
+  endEvent: async (eventId) => {
+    try {
+      return await API.put(`/student/event/end/${eventId}`);
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Get certificates
+  getCertificates: async () => {
+    try {
+      return await API.get('/student/certificates');
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Get payment history
+  getPaymentHistory: async () => {
+    try {
+      return await API.get('/student/payments');
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Get leaderboard
+  getLeaderboard: async () => {
+    try {
+      return await API.get('/student/leaderboard');
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Get user rank
+  getUserRank: async () => {
+    try {
+      return await API.get('/student/rank');
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Get points summary
+  getPointsSummary: async () => {
+    try {
+      return await API.get('/student/points');
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  }
+};
+
+// ==================== ACTIVITY INTENSITY API ====================
+export const activityIntensityApi = {
+  // Get current intensity
+  getCurrentIntensity: async () => {
+    try {
+      return await API.get('/activity-intensity/current');
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Get activity analysis
+  getActivityAnalysis: async (days = 30) => {
+    try {
+      return await API.get(`/activity-intensity/analysis?days=${days}`);
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Get history
+  getHistory: async () => {
+    try {
+      return await API.get('/activity-intensity/history');
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Get patterns
+  getPatterns: async () => {
+    try {
+      return await API.get('/activity-intensity/patterns');
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Get login streak
+  getLoginStreak: async () => {
+    try {
+      return await API.get('/activity-intensity/streak');
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Get comparison with peers
+  getComparison: async () => {
+    try {
+      return await API.get('/activity-intensity/comparison');
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  }
+};
+
 export default {
   problemsApi,
   eventsApi,
@@ -766,5 +1033,7 @@ export default {
   profileApi,
   analyticsApi,
   contactApi,
-  activityLogApi
+  activityLogApi,
+  studentApi,
+  activityIntensityApi
 };

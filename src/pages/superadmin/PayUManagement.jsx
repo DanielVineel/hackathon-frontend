@@ -47,7 +47,7 @@ const SuperAdminPayUManagement = () => {
   const fetchPayUAccounts = async () => {
     try {
       setLoading(true);
-      const res = await API.get("/admin/payu/accounts");
+      const res = await API.get("/payu/admin/accounts");
       setAccountsList(res.data.accounts || []);
     } catch (err) {
       console.error("Error fetching accounts:", err);
@@ -62,7 +62,7 @@ const SuperAdminPayUManagement = () => {
    */
   const fetchAllTransactions = async () => {
     try {
-      const res = await API.get("/admin/payu/transactions");
+      const res = await API.get("/payu/admin/transactions");
       setTransactionsList(res.data.transactions || []);
     } catch (err) {
       console.error("Error fetching transactions:", err);
@@ -104,7 +104,7 @@ const SuperAdminPayUManagement = () => {
    */
   const handleAccountStatusChange = async (accountId, newStatus) => {
     try {
-      const res = await API.put(`/admin/payu/account/${accountId}/status`, {
+      const res = await API.put(`/payu/admin/accounts/${accountId}/status`, {
         status: newStatus
       });
       alert("Account status updated successfully");
@@ -122,7 +122,7 @@ const SuperAdminPayUManagement = () => {
     if (!limit || parseFloat(limit) <= 0) return;
 
     try {
-      const res = await API.put(`/admin/payu/account/${accountId}/limit`, {
+      const res = await API.put(`/payu/admin/accounts/${accountId}/limit`, {
         transactionLimit: parseFloat(limit)
       });
       alert("Transaction limit updated successfully");

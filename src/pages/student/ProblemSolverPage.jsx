@@ -80,20 +80,19 @@ const ProblemSolverPage = () => {
    * Start solving a problem - save start time to backend
    */
   const startProblemSolving = async () => {
+    // NOTE: Backend endpoints for tracking problem solve start do not exist
+    // Setting default remaining time as fallback
     try {
-      const endpoint = eventId
-        ? `/student/event/${eventId}/problem/${problemId}/start`
-        : `/student/problem/${problemId}/start`;
-
-      const res = await API.post(endpoint);
-
-      if (res.data?.startId) {
-        setProblemStartId(res.data.startId);
-        setRemainingTime(res.data.remainingTime || 3600);
+      // Attempt to get timer info from event if available
+      if (eventId) {
+        const timerRes = await API.get(`/student/event/${eventId}/timer`);
+        setRemainingTime(timerRes.data?.data?.remaining || 3600);
+      } else {
+        setRemainingTime(3600); // Default 1 hour for practice
       }
     } catch (err) {
-      console.error("Error starting problem:", err);
-      // Continue anyway if there's an error
+      console.error("Error getting timer info:", err);
+      setRemainingTime(3600); // Default fallback
     }
   };
 
@@ -101,20 +100,16 @@ const ProblemSolverPage = () => {
    * Restore timer from backend for disconnected sessions
    */
   const restoreTimerFromBackend = async () => {
+    // NOTE: Backend endpoints for tracking problem solve remaining time do not exist
+    // Setting default time for practice/event mode
     try {
-      const endpoint = eventId
-        ? `/student/event/${eventId}/problem/${problemId}/remaining-time`
-        : `/student/problem/${problemId}/remaining-time`;
-
-      const res = await API.get(endpoint);
-
-      if (res.data?.isStarted) {
-        // Problem solving already started - restore timer
-        setProblemStartId(res.data.startId);
-        setRemainingTime(res.data.remainingTime);
+      if (eventId) {
+        // Get timer from event endpoint
+        const timerRes = await API.get(`/student/event/${eventId}/timer`);
+        setRemainingTime(timerRes.data?.data?.remaining || 3600);
       } else {
-        // Not started yet - will start on useEffect after problem loads
-        setRemainingTime(res.data?.totalTime || 3600);
+        // Practice mode - use default 1 hour
+        setRemainingTime(3600);
       }
     } catch (err) {
       console.error("Error fetching timer from backend:", err);

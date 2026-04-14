@@ -182,7 +182,7 @@ const Problems = () => {
   const confirmDelete = async () => {
     try {
       setLoading(true);
-      await API.delete(`/superadmin/problem/${deleteTarget._id}`);
+      await API.delete(`/superadmin/problem/delete/${deleteTarget._id}`);
       setShowConfirmDelete(false);
       alert("Problem deleted successfully!");
       if (activeTab === "all") {
@@ -203,7 +203,7 @@ const Problems = () => {
 
     try {
       setLoading(true);
-      await Promise.all(selectedProblems.map(id => API.delete(`/superadmin/problem/${id}`)));
+      await Promise.all(selectedProblems.map(id => API.delete(`/superadmin/problem/delete/${id}`)));
       setSelectedProblems([]);
       alert("Problems deleted successfully!");
       if (activeTab === "all") {

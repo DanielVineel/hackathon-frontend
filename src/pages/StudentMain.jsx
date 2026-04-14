@@ -21,6 +21,7 @@ import PointsDashboard from "./student/PointsDashboard";
 import CalendarPage from "./student/Calendar";
 import ActivityIntensityDashboard from "./student/ActivityIntensity";
 import StudentCodeEditor from "./student/CodeEditor";
+import PracticeCodeSandbox from "./student/PracticeCodeSandbox";
 import GlobalLeaderboard from "./student/GlobalLeaderboard";
 import EventLeaderboard from "./student/EventLeaderboard";
 import StudentProfile from "./student/Profile";
@@ -74,6 +75,8 @@ const StudentRoutes = () => {
         <Route path="settings" element={<Settings />} />
 
         <Route path="code-editor/:problemId" element={<StudentCodeEditor />} />
+
+        <Route path="practice-sandbox" element={<PracticeCodeSandbox />} />
 
         <Route path="global-leaderboard" element={<GlobalLeaderboard />} />
 

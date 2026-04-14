@@ -38,8 +38,8 @@ const ManagerDashboard = () => {
       setLoading(true);
       showLoader("Loading dashboard...");
       const [managerRes, eventsRes] = await Promise.all([
-        API.get("/managers/profile"),
-        API.get("/events?manager=true")
+        API.get("/manager/profile"),
+        API.get("/manager/events/created")
       ]);
 
       setManager(managerRes.data?.data);

@@ -159,7 +159,7 @@ const PaymentPage = () => {
       setError(null);
 
       // Process payment through backend
-      const response = await API.post(`/payment/process`, {
+      const response = await API.post(`/payments/create`, {
         eventId,
         amount: amount || 0,
         paymentMethod: "card",

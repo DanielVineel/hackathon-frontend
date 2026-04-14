@@ -28,6 +28,7 @@ const links = {
     { path: "/student/activity-intensity", label: "Activity Insights", icon: <FaChartBar /> },
     { path: "/student/events", label: "Events", icon: <FaCalendar /> },
     { path: "/student/problems", label: "Problems", icon: <FaCode /> },
+    { path: "/student/practice-sandbox", label: "Practice Sandbox", icon: <FaCode /> },
     { path: "/student/global-leaderboard", label: "Leaderboard", icon: <FaChartBar /> },
     { path: "/student/certificates", label: "Certificates", icon: <FaCertificate /> },
     { path: "/student/profile", label: "Profile", icon: <FaUsers /> },

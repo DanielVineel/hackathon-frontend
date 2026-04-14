@@ -58,13 +58,11 @@ const EventProblemSolver = () => {
 
       // Fetch event details
       const eventRes = await API.get(`/events/${eventId}`);
-      console.log(eventRes.data)
-      setEventData(eventRes.data);
+      setEventData(eventRes.data?.data || eventRes.data);
 
       // Fetch problems
       const problemsRes = await API.get(`/student/event/${eventId}/problems`);
-      console.log(problemsRes)
-      const problemList = problemsRes.data?.problems || [];
+      const problemList = problemsRes.data?.problems || problemsRes.data?.data || [];
 
       setProblems(problemList);
 
@@ -73,6 +71,9 @@ const EventProblemSolver = () => {
         setSelectedProblem(problemList[0]);
       }
 
+      // Start event (creates EventSubmission record)
+      await startEventSubmission();
+
       // Fetch event timer
       await fetchEventTimer();
     } catch (err) {
@@ -80,6 +81,21 @@ const EventProblemSolver = () => {
       setError(err.response?.data?.message || "Failed to load event");
     } finally {
       setLoading(false);
+    }
+  };
+
+  /**
+   * Start event submission (creates EventSubmission record)
+   */
+  const startEventSubmission = async () => {
+    try {
+      const res = await API.post(`/submissions/events/${eventId}/start`);
+      if (res.data?.success || res.data?.data?._id) {
+        console.log("Event submission started");
+      }
+    } catch (err) {
+      console.error("Error starting event submission:", err);
+      // Continue anyway - user can still solve problems
     }
   };
 
@@ -102,42 +118,23 @@ const EventProblemSolver = () => {
   };
 
   /**
-   * Restore problem timer from backend
-   */
-  const restoreProblemTimer = async (problemId) => {
-    try {
-      const res = await API.get(
-        `/student/event/${eventId}/problem/${problemId}/remaining-time`
-      );
-
-      if (res.data?.isStarted) {
-        setProblemStartId(res.data.startId);
-        setProblemRemainingTime(res.data.remainingTime);
-      } else {
-        setProblemRemainingTime(res.data?.totalTime || 3600);
-      }
-    } catch (err) {
-      console.error("Error fetching problem timer:", err);
-      setProblemRemainingTime(3600);
-    }
-  };
-
-  /**
-   * Start solving a problem
+   * Start solving a problem - uses ProblemSubmission model via backend
    */
   const startProblemSolving = async (problemId) => {
     try {
       const res = await API.post(
-        `/student/event/${eventId}/problem/${problemId}/start`
+        `/submissions/events/${eventId}/problems/${problemId}/start`
       );
 
-      if (res.data?.startId) {
-        setProblemStartId(res.data.startId);
-        setProblemRemainingTime(res.data.remainingTime || 3600);
+      if (res.data?.success) {
+        setProblemStartId(res.data?.data?._id);
+        // Default to 1 hour if no specific problem time limit
+        setProblemRemainingTime(3600);
       }
     } catch (err) {
       console.error("Error starting problem:", err);
-      await restoreProblemTimer(problemId);
+      // Continue anyway - user can still solve the problem
+      setProblemRemainingTime(3600);
     }
   };
 
@@ -148,7 +145,7 @@ const EventProblemSolver = () => {
     // Save code for previous problem
     if (selectedProblem) {
       localStorage.setItem(
-        `event-problem-code-${eventId}-${selectedProblem.id}-${language}`,
+        `event-problem-code-${eventId}-${selectedProblem._id}-${language}`,
         code
       );
     }
@@ -157,16 +154,13 @@ const EventProblemSolver = () => {
 
     // Load saved code for new problem
     const savedCode = localStorage.getItem(
-      `event-problem-code-${eventId}-${problem.id}-${language}`
+      `event-problem-code-${eventId}-${problem._id}-${language}`
     );
     setCode(savedCode || "");
 
-    // Restore or start problem timer
-    await restoreProblemTimer(problem.id);
-
-    // If not started, start it
+    // Start problem solving (creates ProblemSubmission record)
     if (!problemStartId) {
-      await startProblemSolving(problem.id);
+      await startProblemSolving(problem._id);
     }
   };
 
@@ -228,21 +222,21 @@ const EventProblemSolver = () => {
       setSubmitting(true);
 
       const res = await API.post(`/submissions/event/submit`, {
-        problemId: selectedProblem.id,
+        problemId: selectedProblem._id,
         eventId,
         code,
         language,
         autoSubmitted: true
       });
 
-      if (res.data?.submissionId) {
+      if (res.data?.success || res.data?.submissionId) {
         alert("⏰ Problem time expired! Your solution has been automatically submitted.");
         localStorage.removeItem(
-          `event-problem-code-${eventId}-${selectedProblem.id}-${language}`
+          `event-problem-code-${eventId}-${selectedProblem._id}-${language}`
         );
 
         // Auto-select next problem if available
-        const currentIndex = problems.findIndex(p => p.id === selectedProblem.id);
+        const currentIndex = problems.findIndex(p => p._id === selectedProblem._id);
         if (currentIndex < problems.length - 1) {
           await selectProblem(problems[currentIndex + 1]);
         }
@@ -258,13 +252,13 @@ const EventProblemSolver = () => {
     // Save current code
     if (selectedProblem) {
       localStorage.setItem(
-        `event-problem-code-${eventId}-${selectedProblem.id}-${language}`,
+        `event-problem-code-${eventId}-${selectedProblem._id}-${language}`,
         code
       );
 
       // Load code for new language
       const savedCode = localStorage.getItem(
-        `event-problem-code-${eventId}-${selectedProblem.id}-${newLanguage}`
+        `event-problem-code-${eventId}-${selectedProblem._id}-${newLanguage}`
       );
       setCode(savedCode || "");
     }
@@ -275,7 +269,7 @@ const EventProblemSolver = () => {
     setCode(newCode);
     if (selectedProblem) {
       localStorage.setItem(
-        `event-problem-code-${eventId}-${selectedProblem.id}-${language}`,
+        `event-problem-code-${eventId}-${selectedProblem._id}-${language}`,
         newCode
       );
     }
@@ -291,14 +285,14 @@ const EventProblemSolver = () => {
       setSubmitting(true);
 
       const res = await API.post(`/submissions/event/run`, {
-        problemId: selectedProblem.id,
+        problemId: selectedProblem._id,
         eventId,
         code,
         language
       });
 
-      if (res.data?.results) {
-        setTestResults(res.data.results);
+      if (res.data?.results || res.data?.success) {
+        setTestResults(res.data.results || []);
       }
     } catch (err) {
       alert(err.response?.data?.message || "Error running tests");
@@ -321,20 +315,20 @@ const EventProblemSolver = () => {
       setSubmitting(true);
 
       const res = await API.post(`/submissions/event/submit`, {
-        problemId: selectedProblem.id,
+        problemId: selectedProblem._id,
         eventId,
         code,
         language
       });
 
-      if (res.data?.submissionId) {
+      if (res.data?.success || res.data?.submissionId) {
         alert("Submission received! Your solution will be evaluated.");
         localStorage.removeItem(
-          `event-problem-code-${eventId}-${selectedProblem.id}-${language}`
+          `event-problem-code-${eventId}-${selectedProblem._id}-${language}`
         );
 
         // Auto-select next problem if available
-        const currentIndex = problems.findIndex(p => p.id === selectedProblem.id);
+        const currentIndex = problems.findIndex(p => p._id === selectedProblem._id);
         if (currentIndex < problems.length - 1) {
           await selectProblem(problems[currentIndex + 1]);
         }
@@ -423,12 +417,12 @@ const EventProblemSolver = () => {
           <div className="problems-list">
             {problems.map((problem) => (
               <button
-                key={problem._id || problem.id}
+                key={problem._id}
                 className={`problem-item ${
-                  selectedProblem.id === problem.id ? "active" : ""
+                  selectedProblem._id === problem._id ? "active" : ""
                 }`}
                 onClick={() => selectProblem(problem)}
-                title={problem.name}
+                title={problem.name || problem.title}
               >
                 <span className="problem-number">{problems.indexOf(problem) + 1}</span>
                 

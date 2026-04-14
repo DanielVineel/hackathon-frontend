@@ -42,7 +42,7 @@ const ManagerCertificates = () => {
 
   const fetchEvents = async () => {
     try {
-      const res = await API.get("/manager/events");
+      const res = await API.get("/manager/events/created");
       const events = res.data?.data || [];
       setEvents(events);
       if (events.length > 0) {
@@ -57,7 +57,7 @@ const ManagerCertificates = () => {
   const fetchCertificates = async () => {
     try {
       const res = await API.get(
-        `/manager/events/${selectedEvent}/certificates`
+        `/manager/events/${selectedEvent}/certificates/templates`
       );
       setCertificates(res.data?.data || []);
     } catch (err) {

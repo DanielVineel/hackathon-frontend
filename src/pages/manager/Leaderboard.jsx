@@ -20,7 +20,7 @@ const ManagerLeaderboard = () => {
 
   const fetchEvents = async () => {
     try {
-      const res = await API.get("/manager/events");
+      const res = await API.get("/manager/events/created");
       const events = res.data?.data || [];
       setEvents(events);
       if (events.length > 0) {
@@ -34,7 +34,7 @@ const ManagerLeaderboard = () => {
 
   const fetchLeaderboard = async () => {
     try {
-      const res = await API.get(`/manager/leaderboard/${selectedEvent}`);
+      const res = await API.get(`/manager/events/${selectedEvent}/leaderboard`);
       setLeaderboard(res.data?.data || []);
     } catch (err) {
       console.error("Error:", err);

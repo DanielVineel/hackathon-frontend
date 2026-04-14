@@ -151,7 +151,7 @@ const Problems = () => {
   const confirmDelete = async () => {
     try {
       setLoading(true);
-      await API.delete(`/manager/problem/${deleteTarget._id}`);
+      await API.delete(`/manager/problem/delete/${deleteTarget._id}`);
       setShowConfirmDelete(false);
       alert("Problem deleted successfully!");
       fetchProblems();
@@ -168,7 +168,7 @@ const Problems = () => {
 
     try {
       setLoading(true);
-      await Promise.all(selectedProblems.map(id => API.delete(`/manager/problem/${id}`)));
+      await Promise.all(selectedProblems.map(id => API.delete(`/manager/problem/delete/${id}`)));
       setSelectedProblems([]);
       alert("Problems deleted successfully!");
       fetchProblems();

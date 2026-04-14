@@ -46,7 +46,7 @@ const Events = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await API.get("/manager/events");
+      const response = await API.get("/manager/events/created");
       setEvents(response.data?.data || []);
       setCurrentPage(1);
     } catch (err) {
@@ -175,12 +175,12 @@ const Events = () => {
   const confirmDelete = async () => {
     try {
       setLoading(true);
-      await API.delete(`/manager/event/${deleteTarget._id}`);
+      // Manager cannot delete events, only SuperAdmin can
+      // This option should not be available to managers
+      alert("Only SuperAdmin can delete events. You can cancel an event using the Cancel option.");
       setShowConfirmDelete(false);
-      alert("Event deleted successfully!");
-      fetchEvents();
     } catch (err) {
-      alert("Error deleting event: " + err.message);
+      alert("Error: " + err.message);
     } finally {
       setLoading(false);
     }

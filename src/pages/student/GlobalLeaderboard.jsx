@@ -13,7 +13,7 @@ const GlobalLeaderboard = () => {
 
   const fetchLeaderboard = async () => {
     try {
-      const res = await API.get(`/student/leaderboard/global?period=${filterPeriod}`);
+      const res = await API.get(`/points/leaderboard`, { params: { timeframe: filterPeriod } });
       setLeaderboard(res.data?.data || []);
       const userRank = res.data?.data?.findIndex((entry) => entry.isCurrentUser);
       if (userRank >= 0) {

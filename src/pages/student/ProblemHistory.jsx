@@ -8,12 +8,14 @@ const ProblemHistory = () => {
   const token=getToken();
 
   useEffect(() => {
-    API.get("/student/problems/history", {
+    // NOTE: /student/problems/history endpoint does not exist in backend
+    // Fetching all problems as placeholder - should be replaced with proper history endpoint
+    API.get("/problems", {
       headers: {
         Authorization: `Bearer ${token}`
       }
     })
-      .then(res => setHistory(res.data.solvedProblems))
+      .then(res => setHistory(res.data || []))
       .catch(err => console.log(err));
   }, []);
 

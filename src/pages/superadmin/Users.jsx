@@ -168,7 +168,7 @@ const Users = () => {
 
   const confirmDelete = async () => {
     try {
-      await API.delete(`/${deleteTarget.role.toLowerCase()}s/${deleteTarget._id}`);
+      await API.delete(`/superadmin/${deleteTarget.role.toLowerCase()}s/${deleteTarget._id}`);
       setUsers(users.filter(u => u._id !== deleteTarget._id));
       setShowConfirmDelete(false);
       setDeleteTarget(null);
@@ -182,7 +182,7 @@ const Users = () => {
       await Promise.all(
         selectedUsers.map(userId => {
           const user = users.find(u => u._id === userId);
-          return API.put(`/${user.role.toLowerCase()}s/${userId}`, { status: newStatus });
+          return API.put(`/superadmin/${user.role.toLowerCase()}s/${userId}`, { status: newStatus });
         })
       );
       
@@ -201,7 +201,7 @@ const Users = () => {
       await Promise.all(
         selectedUsers.map(userId => {
           const user = users.find(u => u._id === userId);
-          return API.delete(`/${user.role.toLowerCase()}s/${userId}`);
+          return API.delete(`/superadmin/${user.role.toLowerCase()}s/${userId}`);
         })
       );
 

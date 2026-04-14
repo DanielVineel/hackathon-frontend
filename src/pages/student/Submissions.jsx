@@ -8,7 +8,11 @@ import "../styles/student/Submissions.css";
 
 const StudentSubmissions = () => {
   const navigate = useNavigate();
-  const { data: submissions, loading, error, refetch } = useApi("/submissions");
+  // NOTE: /submissions endpoint does not exist for retrieving student submission history
+  // Using empty array as placeholder - this feature needs backend implementation
+  const [submissions, setSubmissions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("Submission history feature requires backend API implementation");
   const { filters, updateFilter, resetFilters } = useFilter({
     status: "",
     problemId: "",

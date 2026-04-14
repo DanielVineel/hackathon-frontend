@@ -188,7 +188,7 @@ const Events = () => {
   const confirmDelete = async () => {
     try {
       setLoading(true);
-      await API.delete(`/superadmin/event/${deleteTarget._id}`);
+      await API.delete(`/superadmin/event/delete/${deleteTarget._id}`);
       setShowConfirmDelete(false);
       alert("Event deleted successfully!");
       fetchEvents();
