@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import API from "../../api/api";
-import CodeEditor from "../../components/code-editor/CodeEditor";
-import "../styles/student/CodeEditor.css";
+import "../../components/code-editor/CodeEditor.css";
 
 /**
  * Practice Code Sandbox

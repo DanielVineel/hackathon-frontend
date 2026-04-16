@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import API from "../../api/api";
 import CodeEditor from "../../components/code-editor/CodeEditor";
-import Modal from "../../components/common/Modal";
 import "../styles/student/ProblemSolverPage.css";
 
 const ProblemSolverPage = () => {
@@ -219,17 +218,29 @@ const ProblemSolverPage = () => {
   };
 
   const runSampleTests = async () => {
+    console.log("🔵 runSampleTests called");
+    
     if (!code.trim()) {
+      console.warn("No code entered");
       alert("Please write some code first");
+      return;
+    }
+
+    if (!problemId) {
+      console.error("Problem ID is missing", { problemId });
+      alert("Error: Problem ID not found");
       return;
     }
 
     try {
       setSubmitting(true);
+      console.log("attempting to run tests", { problemId, eventId, language });
 
       const endpoint = eventId
         ? `/submissions/event/run`
         : `/submissions/run`;
+
+      console.log("API endpoint:", endpoint);
 
       const res = await API.post(endpoint, {
         problemId,
@@ -238,23 +249,39 @@ const ProblemSolverPage = () => {
         language
       });
 
+      console.log("API response:", res.data);
+      
       if (res.data?.results) {
+        console.log("Setting test results:", res.data.results);
         setTestResults(res.data.results);
+      } else {
+        console.warn("No results in response:", res.data);
       }
     } catch (err) {
-      alert(err.response?.data?.message || "Error running tests");
+      console.error("Error running tests:", err);
+      console.error("Error response:", err.response?.data);
+      alert(err.response?.data?.message || err.message || "Error running tests");
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleSubmit = async () => {
+    console.log("🔵 ProblemSolverPage handleSubmit called");
+    
     if (!code.trim()) {
+      console.warn("No code entered");
       alert("Please write some code first");
       return;
     }
 
     if (!isTimeExpired && !window.confirm("Are you sure you want to submit your solution?")) {
+      return;
+    }
+
+    if (!problemId) {
+      console.error("Problem ID is missing");
+      alert("Error: Problem ID not found");
       return;
     }
 
@@ -265,6 +292,8 @@ const ProblemSolverPage = () => {
         ? `/submissions/event/submit`
         : `/submissions/submit`;
 
+      console.log("Attempting to submit", { endpoint, problemId, eventId });
+
       const res = await API.post(endpoint, {
         problemId,
         eventId: eventId || null,
@@ -272,7 +301,9 @@ const ProblemSolverPage = () => {
         language
       });
 
-      if (res.data?.submissionId) {
+      console.log("Submit response:", res.data);
+
+      if (res.data?.submissionId || res.data?.success) {
         alert("Submission received! Your solution will be evaluated.");
         // Clear saved code
         localStorage.removeItem(`problem-code-${problemId}-${language}`);
@@ -282,9 +313,13 @@ const ProblemSolverPage = () => {
         } else {
           navigate("/student/problems");
         }
+      } else {
+        console.warn("No submissionId in response:", res.data);
       }
     } catch (err) {
-      alert(err.response?.data?.message || "Submission failed");
+      console.error("Error submitting solution:", err);
+      console.error("Error response:", err.response?.data);
+      alert(err.response?.data?.message || err.message || "Submission failed");
     } finally {
       setSubmitting(false);
     }

@@ -17,31 +17,6 @@ export const pointsAPI = {
 };
 
 /**
- * Calendar API Service
- */
-export const calendarAPI = {
-  createEvent: (eventData) => API.post('/calendar', eventData),
-  getEvents: (params) => API.get('/calendar', { params }),
-  getEventById: (eventId) => API.get(`/calendar/${eventId}`),
-  updateEvent: (eventId, updates) => API.put(`/calendar/${eventId}`, updates),
-  deleteEvent: (eventId) => API.delete(`/calendar/${eventId}`),
-  getUpcomingEvents: (days = 7, userId) =>
-    API.get('/calendar/upcoming', { params: { days, userId } }),
-  getMonthView: (month, year, userId) =>
-    API.get('/calendar/month-view', { params: { month, year, userId } }),
-  getCalendarSummary: (userId) =>
-    API.get('/calendar/summary', { params: { userId } }),
-  addParticipant: (eventId, participantData) =>
-    API.post(`/calendar/${eventId}/participants`, participantData),
-  updateParticipantStatus: (eventId, participantId, statusData) =>
-    API.put(`/calendar/${eventId}/participants/${participantId}`, statusData),
-  removeParticipant: (eventId, participantId) =>
-    API.delete(`/calendar/${eventId}/participants/${participantId}`),
-  bulkUploadEvents: (events) =>
-    API.post('/calendar/bulk/upload', { events })
-};
-
-/**
  * Login Activity API Service
  */
 export const loginActivityAPI = {
@@ -105,30 +80,6 @@ export const saasAPI = {
     }
   },
 
-  // Calendar helpers
-  async getUserCalendarEvents(startDate, endDate) {
-    try {
-      const res = await calendarAPI.getEvents({
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString()
-      });
-      return res.data.events;
-    } catch (error) {
-      console.error('Error fetching calendar events:', error);
-      throw error;
-    }
-  },
-
-  async getUpcomingCalendarEvents(days = 7) {
-    try {
-      const res = await calendarAPI.getUpcomingEvents(days);
-      return res.data.events;
-    } catch (error) {
-      console.error('Error fetching upcoming events:', error);
-      throw error;
-    }
-  },
-
   // Login Activity helpers
   async getUserLoginHistory(days = 30, limit = 50) {
     try {
@@ -178,16 +129,14 @@ export const saasAPI = {
   // Dashboard summary
   async getDashboardSummary() {
     try {
-      const [points, intensity, upcomingEvents] = await Promise.all([
+      const [points, intensity] = await Promise.all([
         pointsAPI.getSummary(),
-        activityIntensityAPI.getCurrentIntensity(),
-        calendarAPI.getUpcomingEvents(7)
+        activityIntensityAPI.getCurrentIntensity()
       ]);
 
       return {
         points: points.data,
-        intensity: intensity.data,
-        upcomingEvents: upcomingEvents.data.events
+        intensity: intensity.data
       };
     } catch (error) {
       console.error('Error fetching dashboard summary:', error);
@@ -198,7 +147,6 @@ export const saasAPI = {
 
 export default {
   pointsAPI,
-  calendarAPI,
   loginActivityAPI,
   activityIntensityAPI,
   saasAPI

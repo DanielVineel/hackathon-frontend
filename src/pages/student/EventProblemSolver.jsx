@@ -276,13 +276,17 @@ const EventProblemSolver = () => {
   };
 
   const runSampleTests = async () => {
+    console.log("🔵 EventProblemSolver runSampleTests called");
+    
     if (!code.trim() || !selectedProblem) {
+      console.warn("Missing code or problem", { hasCode: !!code.trim(), hasProblem: !!selectedProblem });
       alert("Please write some code first");
       return;
     }
 
     try {
       setSubmitting(true);
+      console.log("Attempting to run tests", { problemId: selectedProblem._id, eventId, language });
 
       const res = await API.post(`/submissions/event/run`, {
         problemId: selectedProblem._id,
@@ -291,18 +295,29 @@ const EventProblemSolver = () => {
         language
       });
 
+      console.log("API response:", res.data);
+
       if (res.data?.results || res.data?.success) {
-        setTestResults(res.data.results || []);
+        const resultsToSet = res.data.results || [];
+        console.log("Setting test results:", resultsToSet);
+        setTestResults(resultsToSet);
+      } else {
+        console.warn("No results or success flag in response:", res.data);
       }
     } catch (err) {
-      alert(err.response?.data?.message || "Error running tests");
+      console.error("Error running tests:", err);
+      console.error("Error response:", err.response?.data);
+      alert(err.response?.data?.message || err.message || "Error running tests");
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleSubmit = async () => {
+    console.log("🔵 EventProblemSolver handleSubmit called");
+    
     if (!code.trim() || !selectedProblem) {
+      console.warn("Missing code or problem");
       alert("Please write some code first");
       return;
     }
@@ -313,6 +328,7 @@ const EventProblemSolver = () => {
 
     try {
       setSubmitting(true);
+      console.log("Attempting to submit", { problemId: selectedProblem._id, eventId, language });
 
       const res = await API.post(`/submissions/event/submit`, {
         problemId: selectedProblem._id,
@@ -320,6 +336,8 @@ const EventProblemSolver = () => {
         code,
         language
       });
+
+      console.log("Submit response:", res.data);
 
       if (res.data?.success || res.data?.submissionId) {
         alert("Submission received! Your solution will be evaluated.");
@@ -332,9 +350,13 @@ const EventProblemSolver = () => {
         if (currentIndex < problems.length - 1) {
           await selectProblem(problems[currentIndex + 1]);
         }
+      } else {
+        console.warn("No success or submissionId in response:", res.data);
       }
     } catch (err) {
-      alert(err.response?.data?.message || "Submission failed");
+      console.error("Error submitting solution:", err);
+      console.error("Error response:", err.response?.data);
+      alert(err.response?.data?.message || err.message || "Submission failed");
     } finally {
       setSubmitting(false);
     }

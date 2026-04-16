@@ -1,13 +1,19 @@
+/**
+ * CodeEditor Component Styles (Reusable)
+ * Used by: ProblemSolverPage.jsx, EventProblemSolver.jsx
+ * Location: src/components/code-editor/CodeEditor.jsx
+ */
+
 .code-editor-container {
   display: flex;
   flex-direction: column;
   height: 100%;
-  /* background: #1e1e1e; */
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
+/* ===== TOOLBAR ===== */
 .code-editor-toolbar {
   display: flex;
   justify-content: space-between;
@@ -19,10 +25,15 @@
   flex-wrap: wrap;
 }
 
-.toolbar-left {
+.toolbar-left,
+.toolbar-right {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.toolbar-right {
+  justify-content: flex-end;
 }
 
 .language-label {
@@ -35,7 +46,6 @@
   padding: 6px 12px;
   border: 1px solid #555;
   border-radius: 4px;
-  /* background: #3e3e42; */
   color: #d4d4d4;
   font-size: 14px;
   cursor: pointer;
@@ -45,6 +55,12 @@
 .language-select:hover:not(:disabled) {
   border-color: #0e639c;
   background: #454549;
+}
+
+.language-select:focus {
+  outline: none;
+  border-color: #0e639c;
+  box-shadow: 0 0 0 2px rgba(14, 99, 156, 0.2);
 }
 
 .language-select:disabled {
@@ -63,11 +79,7 @@
   white-space: nowrap;
 }
 
-.toolbar-right {
-  display: flex;
-  gap: 8px;
-}
-
+/* ===== BUTTONS ===== */
 .btn {
   padding: 6px 16px;
   border: none;
@@ -104,7 +116,7 @@
   cursor: not-allowed;
 }
 
-/* Tabs */
+/* ===== TABS ===== */
 .editor-tabs {
   display: flex;
   gap: 0;
@@ -134,7 +146,7 @@
   border-bottom-color: #007acc;
 }
 
-/* Code Mirror */
+/* ===== CODE MIRROR EDITOR ===== */
 .code-mirror-editor {
   flex: 1;
   overflow: auto;
@@ -146,21 +158,76 @@
   font-size: 13px;
 }
 
-/* Test Results Panel */
+/* ===== TEST RESULTS PANEL ===== */
 .test-results-panel {
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 16px;
+  background: #1e1e1e;
 }
 
+/* Results Summary */
+.results-summary {
+  background: linear-gradient(135deg, #252526 0%, #2d2d30 100%);
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.results-summary h3 {
+  margin: 0 0 12px 0;
+  color: #d4d4d4;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.summary-stats {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.summary-stats .stat {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.summary-stats .stat.passed {
+  background: rgba(22, 198, 12, 0.15);
+  color: #16c60c;
+  border-left: 3px solid #16c60c;
+}
+
+.summary-stats .stat.failed {
+  background: rgba(244, 71, 71, 0.15);
+  color: #f44747;
+  border-left: 3px solid #f44747;
+}
+
+.summary-stats .stat.total {
+  background: rgba(100, 100, 100, 0.15);
+  color: #858585;
+  border-left: 3px solid #858585;
+}
+
+/* Test Results List */
+.test-results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Result Card */
 .result-card {
   border: 1px solid #555;
   border-radius: 6px;
   overflow: hidden;
-  /* background: #1e1e1e; */
+  margin: 0;
 }
 
 .result-card.passed {
@@ -227,7 +294,8 @@
   font-size: 12px;
 }
 
-.result-io pre {
+.result-io pre,
+.result-value {
   margin: 0;
   padding: 8px;
   background: #1e1e1e;
@@ -241,17 +309,77 @@
   font-family: "Fira Code", "Consolas", monospace;
 }
 
-.result-io pre.correct {
+.result-io pre.correct,
+.result-value.correct {
   border-left: 3px solid #16c60c;
   color: #16c60c;
 }
 
-.result-io pre.wrong {
+.result-io pre.wrong,
+.result-value.wrong {
   border-left: 3px solid #f44747;
   color: #f44747;
 }
 
-/* Scrollbar styling */
+/* Hidden Test Info */
+.hidden-test-info {
+  padding: 12px;
+  background: #1e1e1e;
+  border-radius: 4px;
+  border-left: 3px solid #0098ff;
+}
+
+.hidden-label {
+  color: #0098ff;
+  font-size: 12px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.hidden-status {
+  color: #858585;
+  font-size: 13px;
+  margin: 0 0 6px 0;
+}
+
+.hidden-status strong {
+  font-weight: 700;
+}
+
+.hidden-status strong.passed {
+  color: #16c60c;
+}
+
+.hidden-status strong.failed {
+  color: #f44747;
+}
+
+.hidden-error {
+  color: #f44747;
+  font-size: 12px;
+  margin: 6px 0 0 0;
+  background: rgba(244, 71, 71, 0.1);
+  padding: 6px 8px;
+  border-radius: 3px;
+}
+
+/* No Results */
+.no-results {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #858585;
+  font-size: 14px;
+  border: 1px dashed #444;
+  border-radius: 6px;
+}
+
+.no-results p {
+  margin: 0;
+}
+
+/* ===== SCROLLBARS ===== */
 .test-results-panel::-webkit-scrollbar,
 .result-io pre::-webkit-scrollbar {
   width: 6px;
