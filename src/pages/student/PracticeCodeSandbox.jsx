@@ -72,10 +72,12 @@ const PracticeCodeSandbox = () => {
         if (results.length > 0) {
           const firstResult = results[0];
           setOutput(firstResult.output || "No output produced");
+          setError(firstResult.error || null);
           setMemory(firstResult.memory || 0);
         }
       } else if (res.data?.output) {
         setOutput(res.data.output);
+
       } else {
         setOutput("Code executed successfully but produced no output");
       }

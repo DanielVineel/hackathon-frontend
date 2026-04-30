@@ -52,9 +52,7 @@ const ProblemSolverPage = () => {
 
       // Fetch problem
       let problemEndpoint = `/problems/${problemId}`;
-      if (eventId) {
-        problemEndpoint = `/student/event/${eventId}/problem/${problemId}`;
-      }
+     
 
       const res = await API.get(problemEndpoint);
       setProblem(res.data);
@@ -83,12 +81,9 @@ const ProblemSolverPage = () => {
     // Setting default remaining time as fallback
     try {
       // Attempt to get timer info from event if available
-      if (eventId) {
-        const timerRes = await API.get(`/student/event/${eventId}/timer`);
-        setRemainingTime(timerRes.data?.data?.remaining || 3600);
-      } else {
+     
         setRemainingTime(3600); // Default 1 hour for practice
-      }
+      
     } catch (err) {
       console.error("Error getting timer info:", err);
       setRemainingTime(3600); // Default fallback
@@ -102,14 +97,10 @@ const ProblemSolverPage = () => {
     // NOTE: Backend endpoints for tracking problem solve remaining time do not exist
     // Setting default time for practice/event mode
     try {
-      if (eventId) {
-        // Get timer from event endpoint
-        const timerRes = await API.get(`/student/event/${eventId}/timer`);
-        setRemainingTime(timerRes.data?.data?.remaining || 3600);
-      } else {
+      
         // Practice mode - use default 1 hour
         setRemainingTime(3600);
-      }
+      
     } catch (err) {
       console.error("Error fetching timer from backend:", err);
       // Default to 1 hour

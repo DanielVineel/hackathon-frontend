@@ -23,19 +23,14 @@ import {
 const links = {
   student: [
     { path: "/student/dashboard", label: "Dashboard", icon: <FaHome /> },
-    { path: "/student/points", label: "Points & Achievements", icon: <FaChartBar /> },
-    { path: "/student/calendar", label: "Calendar", icon: <FaCalendar /> },
-    { path: "/student/activity-intensity", label: "Activity Insights", icon: <FaChartBar /> },
     { path: "/student/events", label: "Events", icon: <FaCalendar /> },
     { path: "/student/problems", label: "Problems", icon: <FaCode /> },
     { path: "/student/practice-sandbox", label: "Practice Sandbox", icon: <FaCode /> },
-    { path: "/student/global-leaderboard", label: "Leaderboard", icon: <FaChartBar /> },
     { path: "/student/certificates", label: "Certificates", icon: <FaCertificate /> },
     { path: "/student/profile", label: "Profile", icon: <FaUsers /> },
     { path: "/student/event-history", label: "Event History", icon: <FaHistory /> },
     { path: "/student/problem-history", label: "Problem History", icon: <FaHistory /> },
     { path: "/student/payment-history", label: "Payment History", icon: <FaMoneyBill /> },
-    { path: "/student/settings", label: "Settings", icon: <FaCog /> },
   ],
   manager: [
     { path: "/manager/dashboard", label: "Dashboard", icon: <FaHome /> },

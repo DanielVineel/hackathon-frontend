@@ -16,11 +16,7 @@ import StudentCertificates from "./student/Certificates";
 import EventHistory from "./student/EventHistory";
 import ProblemHistory from "./student/ProblemHistory";
 import PaymentHistory from "./student/PaymentHistory";
-import Settings from "./student/Settings";
-import PointsDashboard from "./student/PointsDashboard";
-import ActivityIntensityDashboard from "./student/ActivityIntensity";
 import PracticeCodeSandbox from "./student/PracticeCodeSandbox";
-import GlobalLeaderboard from "./student/GlobalLeaderboard";
 import EventLeaderboard from "./student/EventLeaderboard";
 import StudentProfile from "./student/Profile";
 const StudentRoutes = () => {
@@ -40,10 +36,6 @@ const StudentRoutes = () => {
 
         {/* ===== Student Routes ===== */}
         <Route path="dashboard" element={<StudentDashboard />} />
-
-        <Route path="points" element={<PointsDashboard />} />
-
-        <Route path="activity-intensity" element={<ActivityIntensityDashboard />} />
 
         {/* ===== Events Routes ===== */}
         <Route path="events" element={<StudentEvents />} />
@@ -68,12 +60,7 @@ const StudentRoutes = () => {
 
         <Route path="payment-history" element={<PaymentHistory />} />
 
-        <Route path="settings" element={<Settings />} />
-
-
         <Route path="practice-sandbox" element={<PracticeCodeSandbox />} />
-
-        <Route path="global-leaderboard" element={<GlobalLeaderboard />} />
 
         <Route path="event-leaderboard/:eventId" element={<EventLeaderboard />} />
 
